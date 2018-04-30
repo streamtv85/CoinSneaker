@@ -6,6 +6,9 @@ __pycache__/
 # config file
 **/config.ini
 
+# database files
+**/*.db
+
 # PyCharm files
 .idea/
 
