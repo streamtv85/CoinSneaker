@@ -111,3 +111,5 @@ ENV/
 bot/config.py
 bot/config.py
 bot/config.py
+bot/data.csv
+_not_commit.txt
