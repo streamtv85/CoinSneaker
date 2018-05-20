@@ -17,11 +17,15 @@ def get_price_diff(mock=False):
         period = 300.0
         amp = 300.0
         timestamp = time.time() - start
-        logger.info("timestamp: {0}".format(timestamp))
-        return round(amp * math.sin(2 * math.pi * timestamp / period) + random.gauss(0, amp / 5), 2)
+        # logger.info("timestamp: {0}".format(timestamp))
+        return round(- amp * math.sin(2 * math.pi * timestamp / period) + random.gauss(0, amp / 5), 2)
         # return round(amp * math.sin(2 * math.pi * timestamp * period) + random.gauss(0, amp / 10), 2)
 
     return round(get_bitfinex_btc_price() - get_exmo_btc_price(), 2)
+
+
+def get_price_avg():
+    return round((get_bitfinex_btc_price() + get_exmo_btc_price()) / 2, 2)
 
 
 def get_exmo_btc_price():
@@ -38,6 +42,12 @@ def get_data_from_api(base_url, path):
     response = requests.get(base_url + path)
     assert response.status_code == 200, logger.error("Status code was unsuccessful!")
     return response.json()
+
+
+def update_ma(new_value, old_value, period):
+    if old_value == 0:
+        old_value = new_value
+    return (new_value + period * old_value) / (period + 1)
 
 
 print("BTC price on Exmo: " + str(get_exmo_btc_price()) + " USD")

@@ -109,7 +109,5 @@ ENV/
 # mypy
 .mypy_cache/
 bot/config.py
-bot/config.py
-bot/config.py
-bot/data.csv
+bot/*.csv
 _not_commit.txt
