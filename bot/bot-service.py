@@ -90,8 +90,8 @@ add_command_handlers(dispatcher)
 
 def get_exchange_data():
     global price_diff_prev, price_diff_ma_slow, price_diff_ma_fast, price_avg_ma_fast, alert, price_exmo, price_bitfin
-    price_diff = get_price_diff()
-    # price_diff = get_price_diff(mock=True)
+    # price_diff = get_price_diff()
+    price_diff = get_price_diff(mock=True)
     price_exmo = get_exmo_btc_price()
     price_bitfin = get_bitfinex_btc_price()
     price_avg = round((price_exmo + price_bitfin) / 2, 2)
@@ -129,8 +129,9 @@ def callback_exchanges_data(bot, job):
             percent, math.fabs(percent)))
 
     if (math.fabs(percent) <= 0.2) or (1.8 < math.fabs(percent) < 3.0):
+        excl = emoji.emojize(":exclamation:", use_aliases=True)
         if not alert:
-            text = "Внимание! Разница цен BTC/USD между Exmo и Bitfinex достигла {0}%".format(
+            text = excl + "Внимание" + excl + " Разница цен BTC/USD между Exmo и Bitfinex достигла {0}%".format(
                 percent)
             send_text_to_subscribers(bot, text)
             logger.info("Alert is now True. Alert messages sent!Text: {0}".format(text))
@@ -182,7 +183,7 @@ def archive_old_files(pattern):
             creation_time = os.path.getctime(f)
             (name, ext) = os.path.splitext(f)
             # archive file if older than 7 days
-            if (current_time - creation_time) // (24 * 3600) >= config.get('MAIN', 'exchangeDataAge'):
+            if (current_time - creation_time) // (24 * 3600) >= float(config.get('MAIN', 'exchangeDataAge')):
                 logger.info("File {0} is older than 7 days. Zip it!")
                 make_archive(name, 'zip', '.', f)
                 os.remove(f)

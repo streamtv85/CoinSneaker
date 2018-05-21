@@ -1,3 +1,8 @@
+from time import sleep
+import emoji
+
+import telegram
+
 from bot.dbmanager import *
 import logging
 
@@ -64,8 +69,17 @@ def welcome(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text="Добро пожаловать в наш чатик!")
 
 
+def master(bot, update):
+    debug_info(bot, update)
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Моя Хазяина" + emoji.emojize(":heart_eyes:", use_aliases=True))
+    sleep(3)
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('tests/test.png', 'rb'))
+
+
 def debug_info(bot, update):
     logger.debug(' > received message from chat id: ' + str(update.message.chat_id))
     logger.debug(' > from user: ' + str(update.message.from_user))
     logger.debug(' > message text: ' + str(update.message.text))
-    logger.debug(' > chat member info: ' + str(bot.get_chat_member(update.message.chat_id, update.message.from_user.id)))
+    logger.debug(
+        ' > chat member info: ' + str(bot.get_chat_member(update.message.chat_id, update.message.from_user.id)))
