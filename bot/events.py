@@ -68,6 +68,18 @@ def welcome(bot, update):
     debug_info(bot, update)
     bot.send_message(chat_id=update.message.chat_id, text="Добро пожаловать в наш чатик!")
 
+# It turned out that mentions are only possible in group chats. You cannot mention someone in private chat
+def mention(bot, update):
+    debug_info(bot, update)
+    if i_was_mentioned(bot, update):
+        update.message.reply_text("Кто меня звал?")
+
+
+def i_was_mentioned(bot, update):
+    mentions = update.message.parse_entities(telegram.MessageEntity.MENTION)
+    logger.debug("all mentions: " + str(mentions.values()))
+    return ('@' + bot.get_me()['username']) in mentions.values()
+
 
 def master(bot, update):
     debug_info(bot, update)

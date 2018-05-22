@@ -20,7 +20,6 @@ def get_price_diff(mock=False):
         # logger.info("timestamp: {0}".format(timestamp))
         return round(- amp * math.sin(2 * math.pi * timestamp / period) + random.gauss(0, amp / 5), 2)
         # return round(amp * math.sin(2 * math.pi * timestamp * period) + random.gauss(0, amp / 10), 2)
-
     return round(get_bitfinex_btc_price() - get_exmo_btc_price(), 2)
 
 
@@ -40,7 +39,7 @@ def get_bitfinex_btc_price():
 
 def get_data_from_api(base_url, path):
     response = requests.get(base_url + path)
-    assert response.status_code == 200, logger.error("Status code was unsuccessful!")
+    assert response.status_code == 200, logger.error("Status code was unsuccessful! Code: " + str(response.status_code))
     return response.json()
 
 

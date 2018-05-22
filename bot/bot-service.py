@@ -7,6 +7,7 @@ import os
 from os import path
 from shutil import make_archive
 
+from telegram import MessageEntity
 from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
@@ -46,10 +47,23 @@ price_bitfin = 0.0
 alert = False
 
 
+def send_prices(bot, update):
+    percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
+    message = "Цены BTC/USD: Exmo {0}, Bitfinex {1}, разница цен: {2} ({3}%)".format(
+        price_exmo,
+        price_bitfin,
+        round(price_diff_ma_fast, 2),
+        percent)
+    bot.send_message(chat_id=update.message.chat_id, text=message)
+
+
 def add_message_handlers(disp):
-    logger.info("adding message handlers")
+    logger.info("Adding message handlers.")
     welcome_handler = MessageHandler(Filters.status_update.new_chat_members, welcome)
     disp.add_handler(welcome_handler)
+
+    mention_handler = MessageHandler(Filters.entity(MessageEntity.MENTION), mention)
+    disp.add_handler(mention_handler)
 
     el_handler = MessageHandler(Filters.regex(r"\s*Эля\s*"), el)
     disp.add_handler(el_handler)
@@ -59,7 +73,7 @@ def add_message_handlers(disp):
 
 
 def add_command_handlers(disp):
-    logger.info("adding command handlers")
+    logger.info("Adding command handlers.")
     start_handler = CommandHandler('start', start)
     disp.add_handler(start_handler)
 
@@ -69,9 +83,12 @@ def add_command_handlers(disp):
     unsub_handler = CommandHandler('unsubscribe', unsubscribe)
     disp.add_handler(unsub_handler)
 
+    prices_handler = CommandHandler('price', send_prices)
+    disp.add_handler(prices_handler)
+
     caps_handler = CommandHandler('caps', caps, pass_args=True)
     disp.add_handler(caps_handler)
-
+    # Filters.entity(MessageEntity.MENTION)
     # should be added as the LAST handler
     unknown_handler = MessageHandler(Filters.command, unknown)
     dispatcher.add_handler(unknown_handler)
@@ -90,8 +107,8 @@ add_command_handlers(dispatcher)
 
 def get_exchange_data():
     global price_diff_prev, price_diff_ma_slow, price_diff_ma_fast, price_avg_ma_fast, alert, price_exmo, price_bitfin
-    # price_diff = get_price_diff()
-    price_diff = get_price_diff(mock=True)
+    price_diff = get_price_diff()
+    # price_diff = get_price_diff(mock=True)
     price_exmo = get_exmo_btc_price()
     price_bitfin = get_bitfinex_btc_price()
     price_avg = round((price_exmo + price_bitfin) / 2, 2)
@@ -115,7 +132,7 @@ def callback_exchanges_data(bot, job):
     global alert
     price_diff = get_exchange_data()
 
-    percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 4)
+    percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
     # if price_diff * price_diff_prev < 0:
     # price difference changed sign
     # text = "Warning! Exmo - Bitfinex price difference has changed. Now it equals {0}, before it was {1}".format(
@@ -128,13 +145,13 @@ def callback_exchanges_data(bot, job):
             price_bitfin,
             percent, math.fabs(percent)))
 
-    if (math.fabs(percent) <= 0.2) or (1.8 < math.fabs(percent) < 3.0):
+    if (math.fabs(percent) <= 0.2) or (1 < percent < 3.0) or (1.8 < -percent < 3.0):
         excl = emoji.emojize(":exclamation:", use_aliases=True)
         if not alert:
-            text = excl + "Внимание" + excl + " Разница цен BTC/USD между Exmo и Bitfinex достигла {0}%".format(
-                percent)
+            text = excl + "Внимание" + excl + " Разница цен BTC/USD между Bitfinex и Exmo достигла {0}%, а именно {1} USD".format(
+                percent, round(price_diff_ma_fast, 2))
             send_text_to_subscribers(bot, text)
-            logger.info("Alert is now True. Alert messages sent!Text: {0}".format(text))
+            logger.info("Alert is now True. Alert messages sent! Text: {0}".format(text))
             alert = True
     else:
         logger.debug("Alert is now False. Looking for new triggers.")
