@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import glob
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -54,6 +56,9 @@ def send_prices(bot, update):
         price_bitfin,
         round(price_diff_ma_fast, 2),
         percent)
+    logger.info(
+        "Received request to send current prices to chat id " + str(
+            update.message.chat_id) + ". Sending text: " + message)
     bot.send_message(chat_id=update.message.chat_id, text=message)
 
 
@@ -96,7 +101,6 @@ def add_command_handlers(disp):
 
 updater = Updater(token=config.get('MAIN', 'token'))
 job_queue = updater.job_queue
-
 
 logger.info("Checking if bot is okay")
 logger.info(updater.bot.get_me())
