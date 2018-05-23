@@ -49,7 +49,7 @@ alert = False
 
 def send_prices(bot, update):
     percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
-    message = "Цены BTC/USD: Exmo {0}, Bitfinex {1}, разница цен: {2} ({3}%)".format(
+    message = "Цены BTC/USD: Exmo {0}, Bitfinex {1}, разница цен: {2} USD ({3}%)".format(
         price_exmo,
         price_bitfin,
         round(price_diff_ma_fast, 2),
@@ -97,6 +97,7 @@ def add_command_handlers(disp):
 updater = Updater(token=config.get('MAIN', 'token'))
 job_queue = updater.job_queue
 
+
 logger.info("Checking if bot is okay")
 logger.info(updater.bot.get_me())
 
@@ -107,10 +108,11 @@ add_command_handlers(dispatcher)
 
 def get_exchange_data():
     global price_diff_prev, price_diff_ma_slow, price_diff_ma_fast, price_avg_ma_fast, alert, price_exmo, price_bitfin
-    price_diff = get_price_diff()
-    # price_diff = get_price_diff(mock=True)
+
     price_exmo = get_exmo_btc_price()
     price_bitfin = get_bitfinex_btc_price()
+    price_diff = round(price_bitfin - price_exmo, 2)
+    # price_diff = get_price_diff_mock()
     price_avg = round((price_exmo + price_bitfin) / 2, 2)
 
     price_diff_ma_slow = update_ma(price_diff, price_diff_ma_slow, price_ma_period_slow)

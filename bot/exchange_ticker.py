@@ -11,16 +11,14 @@ start = time.time()
 timestamp = 0.0
 
 
-def get_price_diff(mock=False):
+def get_price_diff_mock():
     global timestamp, start
-    if mock:
-        period = 300.0
-        amp = 300.0
-        timestamp = time.time() - start
-        # logger.info("timestamp: {0}".format(timestamp))
-        return round(- amp * math.sin(2 * math.pi * timestamp / period) + random.gauss(0, amp / 5), 2)
-        # return round(amp * math.sin(2 * math.pi * timestamp * period) + random.gauss(0, amp / 10), 2)
-    return round(get_bitfinex_btc_price() - get_exmo_btc_price(), 2)
+    period = 300.0
+    amp = 300.0
+    timestamp = time.time() - start
+    # logger.info("timestamp: {0}".format(timestamp))
+    return round(- amp * math.sin(2 * math.pi * timestamp / period) + random.gauss(0, amp / 5), 2)
+    # return round(amp * math.sin(2 * math.pi * timestamp * period) + random.gauss(0, amp / 10), 2)
 
 
 def get_price_avg():
