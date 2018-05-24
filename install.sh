@@ -22,7 +22,7 @@ cd $HOME_DIR && git pull
 sudo mkdir -p $SERVICE_DIR
 sudo chown administrator $SERVICE_DIR
 \cp -rf $HOME_DIR/* $SERVICE_DIR
-sudo chmod 755 $SERVICE_DIR/bot/bot-service.py
+sudo chmod 755 $SERVICE_DIR/bot/bot_service.py
 
 sudo \cp -f $SERVICE_DIR/bot-service.sh /etc/init.d
 sudo chmod 755 $SERVICE_DIR/bot-service.sh

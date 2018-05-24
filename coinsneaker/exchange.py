@@ -47,10 +47,7 @@ def update_ma(new_value, old_value, period):
     return (new_value + period * old_value) / (period + 1)
 
 
-print("BTC price on Exmo: " + str(get_exmo_btc_price()) + " USD")
-print("BTC price on Bitfinex: " + str(get_bitfinex_btc_price()) + " USD")
-
-# step = 1  # seconds
-# while True:
-#     print(get_price_diff(mock=True))
-#     time.sleep(step)
+# some tests
+if __name__ == "__main__":
+    print("BTC price on Exmo: " + str(get_exmo_btc_price()) + " USD")
+    print("BTC price on Bitfinex: " + str(get_bitfinex_btc_price()) + " USD")

@@ -11,8 +11,8 @@
 ### END INIT INFO
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/usr/local/bin/bot-service/bot
-DAEMON=$DIR/bot-service.py
+DIR=/usr/local/bin/bot-service/coinsneaker
+DAEMON=$DIR/bot_service.py
 DAEMON_NAME=bot-service
 
 # Add any command line options for your daemon here

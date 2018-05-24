@@ -1,18 +1,24 @@
 import sqlite3
 import logging
+from os import path, makedirs
+from coinsneaker.configmanager import config
 
 DB_NAME = 'main.db'
 cursor = None
 logger = logging.getLogger('bot-service.dbmanager')
-
+db_folder = config.get('dbFolder')
+if not path.exists(db_folder):
+    logger.debug("creating folder: " + db_folder)
+    makedirs(db_folder, exist_ok=True)
+db_path = path.join(db_folder, DB_NAME)
 
 def sqlite_decorator(func):
     def new_function(*args, **kwargs):
-        global cursor
+        global cursor, db_path
         try:
             # Creates or opens a database file with a SQLite3 DB
-            logger.debug("connect to the '" + str(DB_NAME) + "' database")
-            db = sqlite3.connect(DB_NAME)
+            logger.debug("connect to the '" + str(db_path) + "' database")
+            db = sqlite3.connect(db_path)
             cursor = db.cursor()
             result = func(*args, **kwargs)
             logger.debug("commit changes to the database")
@@ -69,10 +75,12 @@ def get_all_chats():
 logger.info('SQLIte library version: {0}'.format(sqlite3.sqlite_version))
 logger.info('init the db, create a table if not exists')
 init_db()
-result = get_all_chats()
-if result:
-    logger.info('Existing subscribers in the db:')
-    logger.info(result)
+
+if __name__ == "__main__":
+    result = get_all_chats()
+    if result:
+        logger.info('Existing subscribers in the db:')
+        logger.info(result)
 # print('add chat with id 1')
 # add_chat(1)
 # print('add chat with id 2')

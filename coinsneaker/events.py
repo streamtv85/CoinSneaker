@@ -6,7 +6,6 @@ import telegram
 from coinsneaker.dbmanager import *
 import logging
 
-# logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger('bot-service.events')
 
 
@@ -67,6 +66,7 @@ def caps(bot, update, args):
 def welcome(bot, update):
     debug_info(bot, update)
     bot.send_message(chat_id=update.message.chat_id, text="Добро пожаловать в наш чатик!")
+
 
 # It turned out that mentions are only possible in group chats. You cannot mention someone in private chat
 def mention(bot, update):
