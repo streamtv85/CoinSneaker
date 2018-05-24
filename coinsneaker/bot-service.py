@@ -14,8 +14,8 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-from bot.events import *
-from bot.exchange_ticker import *
+from .events import *
+from .exchange_ticker import *
 
 config = configparser.ConfigParser()
 config.read('config.ini')

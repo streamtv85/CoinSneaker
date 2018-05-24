@@ -28,7 +28,8 @@ sudo \cp -f $SERVICE_DIR/bot-service.sh /etc/init.d
 sudo chmod 755 $SERVICE_DIR/bot-service.sh
 
 cd $SERVICE_DIR
-pipenv install requests python-telegram-bot emoji .
+pipenv install requests python-telegram-bot emoji
+pipenv install -e .
 
 
 #service $DAEMON_NAME start
