@@ -14,8 +14,8 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-from .events import *
-from .exchange_ticker import *
+from coinsneaker.events import *
+from coinsneaker.exchange import *
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -57,8 +57,9 @@ def send_prices(bot, update):
         round(price_diff_ma_fast, 2),
         percent)
     logger.info(
-        "Received request to send current prices to chat id " + str(
-            update.message.chat_id) + ". Sending text: " + message)
+        "Received request to send current prices to chat id {0} from user {1} (id: {2}). Sending text: {3}".format(str(
+            update.message.chat_id), update.message.from_user.username,
+            update.message.from_user.id, message))
     bot.send_message(chat_id=update.message.chat_id, text=message)
 
 

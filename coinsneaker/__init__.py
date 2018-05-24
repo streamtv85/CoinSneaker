@@ -1,4 +1,4 @@
 from .events import *
-from .exchange_ticker import *
+from .exchange import *
 from .dbmanager import *
 
