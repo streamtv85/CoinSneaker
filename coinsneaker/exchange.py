@@ -37,7 +37,8 @@ def get_bitfinex_btc_price():
 
 def get_data_from_api(base_url, path):
     response = requests.get(base_url + path)
-    assert response.status_code == 200, logger.error("Status code was unsuccessful! Code: " + str(response.status_code))
+    assert response.status_code == 200, logger.error(
+        "Status code was {0} when accessing {1}".format(response.status_code, base_url + path))
     return response.json()
 
 
