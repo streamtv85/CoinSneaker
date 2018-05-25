@@ -7,6 +7,7 @@ DB_NAME = 'main.db'
 cursor = None
 logger = logging.getLogger('bot-service.dbmanager')
 db_folder = path.join(path.dirname(path.abspath(__file__)), config.get('dbFolder'))
+logger.info("db folder: " + db_folder)
 if not path.exists(db_folder):
     logger.debug("creating folder: " + db_folder)
     makedirs(db_folder, exist_ok=True)
