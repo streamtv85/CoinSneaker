@@ -1,4 +1,4 @@
-#!/usr/bin/env fades -p python3
+#!/usr/bin/env python3
 
 import glob
 from logging.handlers import TimedRotatingFileHandler
@@ -15,11 +15,13 @@ from coinsneaker.events import *  # fades.pypi
 from coinsneaker.exchange import *  # fades.pypi
 from coinsneaker.configmanager import config  # fades.pypi
 
+cwd = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger('bot-service')
 log_level = config.get('logLevel')
 logger.setLevel(logging.getLevelName(log_level))
 # create file handler which logs even debug messages
-fh = TimedRotatingFileHandler('bot-service.log', when='D', interval=1, backupCount=config.get('logMaxAge'),
+logfilename = os.path.join(cwd, 'bot-service.log')
+fh = TimedRotatingFileHandler(logfilename, when='D', interval=1, backupCount=config.get('logMaxAge'),
                               encoding='utf_8')
 fh.setLevel(logging.getLevelName(log_level))
 # create console handler with a higher log level
@@ -190,7 +192,7 @@ def write_exchange_data_to_file(header, text):
     os.makedirs(folder, exist_ok=True)
     data_filename = time.strftime(csv_prefix + "-%d-%m-%Y")
     csv_ext = '.csv'
-    full_path = path.join(folder, data_filename + csv_ext)
+    full_path = path.join(cwd, folder, data_filename + csv_ext)
     exists = path.exists(full_path)
     f = open(full_path, "a+")
     if not exists:
@@ -199,7 +201,7 @@ def write_exchange_data_to_file(header, text):
     logger.debug("filename with exchange data: " + data_filename)
     f.write(text)
     f.close()
-    archive_old_files(path.join(folder, "exchange-data*.csv"))
+    archive_old_files(path.join(cwd, folder, "exchange-data*.csv"))
 
 
 def archive_old_files(pattern):
@@ -224,6 +226,7 @@ def archive_old_files(pattern):
 
 
 if __name__ == "__main__":
+    logger.info("Current folder is: " + cwd)
     updater = Updater(token=config.get('token'))
     job_queue = updater.job_queue
 

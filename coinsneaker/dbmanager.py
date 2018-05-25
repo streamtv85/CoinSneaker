@@ -6,7 +6,7 @@ from coinsneaker.configmanager import config # fades.pypi
 DB_NAME = 'main.db'
 cursor = None
 logger = logging.getLogger('bot-service.dbmanager')
-db_folder = config.get('dbFolder')
+db_folder = path.join(path.dirname(path.abspath(__file__)), config.get('dbFolder'))
 if not path.exists(db_folder):
     logger.debug("creating folder: " + db_folder)
     makedirs(db_folder, exist_ok=True)
