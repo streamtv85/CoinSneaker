@@ -8,4 +8,9 @@ setup(name='coinsneaker',
       author_email='streamtv85@gmail.com',
       license='MIT',
       packages=['coinsneaker'],
+      install_requires=[
+          'emoji',
+          'requests',
+          'python-telegram-bot',
+      ],
       zip_safe=False)
