@@ -17,5 +17,6 @@ sudo chmod 755 $SERVICE_DIR/coinsneaker/bot_service.py
 sudo chmod 755 $SERVICE_DIR/coinsneaker/run.sh
 sudo chmod 755 $SERVICE_DIR/bot-service.sh
 sudo \cp -f $SERVICE_DIR/bot-service.sh /etc/init.d
+sudo systemctl daemon-reload
 
 sudo service $DAEMON_NAME start
