@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env fades -p python3
 
 import glob
 from logging.handlers import TimedRotatingFileHandler
@@ -6,14 +6,14 @@ from logging.handlers import TimedRotatingFileHandler
 import os
 from shutil import make_archive
 
-from telegram import MessageEntity
-from telegram.ext import Updater
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters
+from telegram import MessageEntity  # fades.pypi python-telegram-bot
+from telegram.ext import Updater  # fades.pypi python-telegram-bot
+from telegram.ext import CommandHandler  # fades.pypi python-telegram-bot
+from telegram.ext import MessageHandler, Filters  # fades.pypi python-telegram-bot
 
-from coinsneaker.events import *
-from coinsneaker.exchange import *
-from coinsneaker.configmanager import config
+from coinsneaker.events import *  # fades.pypi .
+from coinsneaker.exchange import *  # fades.pypi .
+from coinsneaker.configmanager import config  # fades.pypi .
 
 logger = logging.getLogger('bot-service')
 log_level = config.get('logLevel')
