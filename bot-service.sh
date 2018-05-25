@@ -6,7 +6,7 @@
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Telegram bot for crypto analytics
+# Short-Description: CoinSneaker bot
 # Description:       Telegram bot that monitors different data on the exchanges and sends notifications when certain conditions are met
 ### END INIT INFO
 
