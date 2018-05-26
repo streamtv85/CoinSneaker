@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 SERVICE_DIR=/usr/local/bin/bot-service
@@ -11,7 +11,7 @@ SERVICE_DIR=/usr/local/bin/bot-service
 #To start the program:
 
 cd $SERVICE_DIR
-source bot_env/bin/activate
+source $SERVICE_DIR/bot_env/bin/activate
 cd $SERVICE_DIR/coinsneaker
 
 python3 ./bot_service.py

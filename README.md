@@ -20,12 +20,14 @@ chmod 755 install.sh
 curl -L https://github.com/streamtv85/CoinSneaker/raw/master/install.sh | bash
 
 How to run:
-screen -S bot -d -m /usr/local/bin/bot-service/run.sh
+screen -S bot -dL -m /usr/local/bin/bot-service/run.sh
 
 to attach later:
 screen -x bot
 
-commands:
+to detach: press Ctrl-A D
+
+Telegram commands:
 
 subscribe -
 unsubscribe -
