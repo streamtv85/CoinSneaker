@@ -13,7 +13,7 @@ sudo apt-get -y update && sudo apt-get -y upgrade
 sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y ppa:deadsnakes/ppa
 sudo apt-get -y update
-sudo apt-get -y install python3.6  python3-venv python3-pip fades
+sudo apt-get -y install python3.6  python3-venv python3-pip
 sudo pip install pipenv
 
 cd ~
@@ -29,13 +29,14 @@ sudo chmod 755 coinsneaker/run.sh
 sudo chmod 755 $SERVICE_DIR/bot-service.sh
 sudo \cp -f $SERVICE_DIR/bot-service.sh /etc/init.d
 
-cd /etc/init.d
-sudo update-rc.d bot-service.sh defaults
+pipenv install -e .
 
 cd $SERVICE_DIR/coinsneaker
 #Install python packages to virtualenv
 pipenv install requests python-telegram-bot emoji
-pipenv install -e .
+
+cd /etc/init.d
+sudo update-rc.d bot-service.sh defaults
 
 #Generating sample config file
 
