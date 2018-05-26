@@ -1,7 +1,7 @@
 import sqlite3
 import logging
 from os import path, makedirs
-from coinsneaker.configmanager import config # fades.pypi
+from coinsneaker.configmanager import config
 
 DB_NAME = 'main.db'
 cursor = None

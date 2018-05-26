@@ -9,5 +9,9 @@ SERVICE_DIR=/usr/local/bin/bot-service
 #sudo chmod 755 $SERVICE_DIR/coinsneaker/bot_service.py
 
 #To start the program:
+
+cd $SERVICE_DIR
+source bot_env/bin/activate
 cd $SERVICE_DIR/coinsneaker
-pipenv run python ./bot_service.py
+
+python3 ./bot_service.py

@@ -1,7 +1,7 @@
 from time import sleep
-import emoji  # fades.pypi
+import emoji
 
-import telegram  # fades.pypi python-telegram-bot
+import telegram
 
 from coinsneaker.dbmanager import *
 import logging

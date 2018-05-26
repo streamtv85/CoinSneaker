@@ -2,7 +2,7 @@ import math
 import random
 import time
 
-import requests  # fades.pypi
+import requests
 import logging
 
 logger = logging.getLogger('bot-service.exchange')
