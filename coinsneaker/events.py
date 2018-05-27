@@ -3,22 +3,23 @@ import emoji
 
 import telegram
 
-from coinsneaker.dbmanager import *
+from coinsneaker import dbmanager
 import logging
 
 logger = logging.getLogger('bot-service.events')
 
 
 def start(bot, update):
+    debug_info(bot, update)
     bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
 
 
 def subscribe(bot, update):
     chat_id = update.message.chat_id
     logger.info("subscribe: add chat id: " + str(chat_id))
-    logger.debug("full list of subscribers: " + str(get_all_chats()))
-    if chat_id not in get_all_chats():
-        add_chat(chat_id)
+    logger.debug("full list of subscribers: " + str(dbmanager.get_all_chats()))
+    if chat_id not in dbmanager.get_all_chats():
+        dbmanager.add_chat(chat_id)
         logger.info("added.")
         bot.send_message(chat_id=chat_id, text="Okay, you have been subscribed.")
     else:
@@ -29,9 +30,9 @@ def subscribe(bot, update):
 def unsubscribe(bot, update):
     chat_id = update.message.chat_id
     logger.info("unsubscribe: remove chat id: " + str(chat_id))
-    logger.debug("full list of subscribers: " + str(get_all_chats()))
-    if chat_id in get_all_chats():
-        delete_chat(chat_id)
+    logger.debug("full list of subscribers: " + str(dbmanager.get_all_chats()))
+    if chat_id in dbmanager.get_all_chats():
+        dbmanager.delete_chat(chat_id)
         logger.info("deleted.")
         bot.send_message(chat_id=chat_id, text="No worries, you have been unsubscribed.")
     else:

@@ -81,8 +81,7 @@ or (better)
 curl -L https://github.com/streamtv85/CoinSneaker/raw/master/update.sh | bash
 ```
 ## Telegram commands:
-```
-subscribe - Receive notifications when prices reach certain levels
-unsubscribe - Stop receiving notifications
-price - Get current BTC/USD prices
-```
+
+- subscribe - Receive notifications when prices reach certain levels
+- unsubscribe - Stop receiving notifications
+- price - Get current BTC/USD prices

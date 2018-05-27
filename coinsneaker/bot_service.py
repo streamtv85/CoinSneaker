@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 
 import glob
-from logging.handlers import TimedRotatingFileHandler
-
+import logging
+import math
 import os
+import time
+from logging.handlers import TimedRotatingFileHandler
 from shutil import make_archive
 
+import emoji
 from telegram import MessageEntity
-from telegram.ext import Updater
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler, Filters
+from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 
-from coinsneaker.events import *
-from coinsneaker.exchange import *
+from coinsneaker import events, dbmanager, exchange
 from coinsneaker.configmanager import config
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -64,38 +64,38 @@ def send_prices(bot, update):
 
 def add_message_handlers(disp):
     logger.info("Adding message handlers.")
-    welcome_handler = MessageHandler(Filters.status_update.new_chat_members, welcome)
+    welcome_handler = MessageHandler(Filters.status_update.new_chat_members, events.welcome)
     disp.add_handler(welcome_handler)
 
-    mention_handler = MessageHandler(Filters.entity(MessageEntity.MENTION), mention)
+    mention_handler = MessageHandler(Filters.entity(MessageEntity.MENTION), events.mention)
     disp.add_handler(mention_handler)
 
-    el_handler = MessageHandler(Filters.regex(r"\s*Эля\s*"), el)
+    el_handler = MessageHandler(Filters.regex(r"\s*Эля\s*"), events.el)
     disp.add_handler(el_handler)
 
-    echo_handler = MessageHandler(Filters.text, echo)
+    echo_handler = MessageHandler(Filters.text, events.echo)
     disp.add_handler(echo_handler)
 
 
 def add_command_handlers(disp):
     logger.info("Adding command handlers.")
-    start_handler = CommandHandler('start', start)
+    start_handler = CommandHandler('start', events.start)
     disp.add_handler(start_handler)
 
-    sub_handler = CommandHandler('subscribe', subscribe)
+    sub_handler = CommandHandler('subscribe', events.subscribe)
     disp.add_handler(sub_handler)
 
-    unsub_handler = CommandHandler('unsubscribe', unsubscribe)
+    unsub_handler = CommandHandler('unsubscribe', events.unsubscribe)
     disp.add_handler(unsub_handler)
 
     prices_handler = CommandHandler('price', send_prices)
     disp.add_handler(prices_handler)
 
-    caps_handler = CommandHandler('caps', caps, pass_args=True)
+    caps_handler = CommandHandler('caps', events.caps, pass_args=True)
     disp.add_handler(caps_handler)
 
     # should be added as the LAST handler
-    unknown_handler = MessageHandler(Filters.command, unknown)
+    unknown_handler = MessageHandler(Filters.command, events.unknown)
     dispatcher.add_handler(unknown_handler)
 
 
@@ -103,15 +103,15 @@ def get_exchange_data():
     global price_diff_prev, price_diff_ma_slow, price_diff_ma_fast, price_avg_ma_fast, alert, price_exmo, price_bitfin
 
     price_diff_prev = price_diff_ma_fast
-    price_exmo = get_exmo_btc_price()
-    price_bitfin = get_bitfinex_btc_price()
+    price_exmo = exchange.get_exmo_btc_price()
+    price_bitfin = exchange.get_bitfinex_btc_price()
     price_diff = round(price_bitfin - price_exmo, 2)
     # price_diff = get_price_diff_mock()
     price_avg = round((price_exmo + price_bitfin) / 2, 2)
 
-    price_diff_ma_slow = update_ma(price_diff, price_diff_ma_slow, price_ma_period_slow)
-    price_diff_ma_fast = update_ma(price_diff, price_diff_ma_fast, price_ma_period_fast)
-    price_avg_ma_fast = update_ma(price_avg, price_avg_ma_fast, price_ma_period_fast)
+    price_diff_ma_slow = exchange.update_ma(price_diff, price_diff_ma_slow, price_ma_period_slow)
+    price_diff_ma_fast = exchange.update_ma(price_diff, price_diff_ma_fast, price_ma_period_fast)
+    price_avg_ma_fast = exchange.update_ma(price_avg, price_avg_ma_fast, price_ma_period_fast)
 
     logger.debug(
         "Bitfinex - Exmo price difference is {0} USD, before it was {1} USD. Slow MA: {2}, Fast MA: {3}".format(
@@ -179,7 +179,7 @@ def callback_exchanges_data(bot, job):
 
 
 def send_text_to_subscribers(bot, text):
-    list_of_chats = get_all_chats()
+    list_of_chats = dbmanager.get_all_chats()
     logger.debug('List of chats to send message to: ' + str(list_of_chats))
     for chat in list_of_chats:
         bot.send_message(chat_id=chat, text=text)
@@ -192,8 +192,8 @@ def write_exchange_data_to_file(header, text):
     os.makedirs(folder, exist_ok=True)
     data_filename = time.strftime(csv_prefix + "-%d-%m-%Y")
     csv_ext = '.csv'
-    full_path = path.join(cwd, folder, data_filename + csv_ext)
-    exists = path.exists(full_path)
+    full_path = os.path.join(cwd, folder, data_filename + csv_ext)
+    exists = os.path.exists(full_path)
     f = open(full_path, "a+")
     if not exists:
         logger.info("file '" + full_path + "' does not exist. Writing header")
@@ -201,7 +201,7 @@ def write_exchange_data_to_file(header, text):
     logger.debug("filename with exchange data: " + data_filename)
     f.write(text)
     f.close()
-    archive_old_files(path.join(cwd, folder, "exchange-data*.csv"))
+    archive_old_files(os.path.join(cwd, folder, "exchange-data*.csv"))
 
 
 def archive_old_files(pattern):
@@ -234,8 +234,11 @@ if __name__ == "__main__":
     logger.info(updater.bot.get_me())
 
     dispatcher = updater.dispatcher
-    add_message_handlers(dispatcher)
     add_command_handlers(dispatcher)
+    add_message_handlers(dispatcher)
+    logger.debug("handlers:")
+    for hah in dispatcher.handlers:
+        print("")
     logger.info("init regular job for execution")
     job_minute = job_queue.run_repeating(callback_exchanges_data, interval=60, first=0)
 

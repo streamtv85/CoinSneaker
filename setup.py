@@ -11,6 +11,6 @@ setup(name='coinsneaker',
       install_requires=[
           'emoji',
           'requests',
-          'python-telegram-bot',
+          'python-telegram-bot'
       ],
       zip_safe=False)
