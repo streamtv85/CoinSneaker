@@ -21,7 +21,7 @@ log_level = config.get('logLevel')
 logger.setLevel(logging.getLevelName(log_level))
 # create file handler which logs even debug messages
 logfilename = os.path.join(cwd, 'bot-service.log')
-fh = TimedRotatingFileHandler(logfilename, when='D', interval=1, backupCount=config.get('logMaxAge'),
+fh = TimedRotatingFileHandler(logfilename, when='D', interval=1, backupCount=int(config.get('logMaxAge')),
                               encoding='utf_8')
 fh.setLevel(logging.getLevelName(log_level))
 # create console handler with a higher log level
