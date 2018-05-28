@@ -110,4 +110,5 @@ ENV/
 .mypy_cache/
 
 **/*.csv
+**/*.zip
 _not_commit.txt
