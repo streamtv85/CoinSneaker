@@ -22,7 +22,7 @@ def send_graph(bot, update, args):
         except ValueError:
             logger.warning("invalid argument was given. Using default period: {0}".format(period))
     logger.info(
-        "Request to plot graph for {0} minutes from chat id {1}, user {2}".format(period, update.message.chat_id,
+        "Request to plot graph for {0} hours from chat id {1}, user {2}".format(period, update.message.chat_id,
                                                                                     update.message.from_user.username))
     graph.generate_graph(target_file, period)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
