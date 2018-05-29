@@ -39,6 +39,8 @@ def get_data_from_api(base_url, path):
     response = requests.get(base_url + path)
     assert response.status_code == 200, logger.error(
         "Status code was {0} when accessing {1}".format(response.status_code, base_url + path))
+    logger.debug("response from " + base_url + path)
+    logger.debug(response.json())
     return response.json()
 
 

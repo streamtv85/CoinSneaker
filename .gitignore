@@ -112,3 +112,4 @@ ENV/
 **/*.csv
 **/*.zip
 _not_commit.txt
+**/*.png

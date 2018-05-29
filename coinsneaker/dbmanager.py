@@ -13,6 +13,7 @@ if not path.exists(db_folder):
     makedirs(db_folder, exist_ok=True)
 db_path = path.join(db_folder, DB_NAME)
 
+
 def sqlite_decorator(func):
     def new_function(*args, **kwargs):
         global cursor, db_path
