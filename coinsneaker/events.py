@@ -1,12 +1,32 @@
+import os
 from time import sleep
 import emoji
 
 import telegram
 
-from coinsneaker import dbmanager
+from coinsneaker import dbmanager, graph
+
 import logging
 
 logger = logging.getLogger('bot-service.events')
+
+
+def send_graph(bot, update, args):
+    debug_info(bot, update)
+
+    target_file = '{0}.png'.format(update.message.chat_id)
+    period = 2
+    if args:
+        try:
+            period = int(args[0])
+        except ValueError:
+            logger.warning("invalid argument was given. Using default period: {0}".format(period))
+    logger.info(
+        "Request to plot graph for {0} minutes from chat id {1}, user {2}".format(period, update.message.chat_id,
+                                                                                    update.message.from_user.username))
+    graph.generate_graph(target_file, period)
+    bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
+    os.remove(target_file)
 
 
 def start(bot, update):

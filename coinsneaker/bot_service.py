@@ -94,6 +94,9 @@ def add_command_handlers(disp):
     caps_handler = CommandHandler('caps', events.caps, pass_args=True)
     disp.add_handler(caps_handler)
 
+    graph_handler = CommandHandler('graph', events.send_graph, pass_args=True)
+    disp.add_handler(graph_handler)
+
     # should be added as the LAST handler
     unknown_handler = MessageHandler(Filters.command, events.unknown)
     dispatcher.add_handler(unknown_handler)
@@ -201,7 +204,7 @@ def write_exchange_data_to_file(header, text):
     logger.debug("filename with exchange data: " + data_filename)
     f.write(text)
     f.close()
-    archive_old_files(os.path.join(cwd, folder, "exchange-data*.csv"))
+    archive_old_files(os.path.join(cwd, folder, csv_prefix + "*.csv"))
 
 
 def archive_old_files(pattern):
@@ -212,18 +215,12 @@ def archive_old_files(pattern):
             (name, ext) = os.path.splitext(f)
             # archive file if older than 7 days
             if (current_time - creation_time) // (24 * 3600) >= float(config.get('exchangeDataAge')):
-                logger.info("File {0} is older than 7 days. Zip it!")
+                logger.info("File {0} is older than 7 days. Zip it!".format(str(f)))
                 make_archive(name, 'zip', '.', f)
                 os.remove(f)
 
 
-# if get_all_chats():
-#     print('getting the list of chat users')
-#     for chat in get_all_chats():
-#         print('chat id: ' + str(chat[0]))
-#         print(updater.bot.get_chat(chat[0]).get_members_count())
-#         print(updater.bot.get_chat(chat[0]).get_member())
-
+# main entry point, executed when the file is being run as a script
 
 if __name__ == "__main__":
     logger.info("Current folder is: " + cwd)
@@ -232,16 +229,18 @@ if __name__ == "__main__":
 
     logger.info("Checking if bot is okay")
     logger.info(updater.bot.get_me())
-
+    chats = dbmanager.get_all_chats()
+    if chats:
+        logger.info('List of subscribers:')
+        logger.info(str(chats))
     dispatcher = updater.dispatcher
     add_command_handlers(dispatcher)
     add_message_handlers(dispatcher)
-    logger.debug("handlers:")
-    for hah in dispatcher.handlers:
-        print("")
+    logger.debug("List of registered handlers:")
+    for current in list(dispatcher.handlers.values())[0]:
+        logger.debug(str(current.callback.__name__))
     logger.info("init regular job for execution")
     job_minute = job_queue.run_repeating(callback_exchanges_data, interval=60, first=0)
-
     # polling loop
     logger.info("The bot has started.")
     updater.start_polling()
