@@ -35,15 +35,13 @@ def get_data_from_file(size):
         last_time_of_prev_file = time.mktime(time.strptime(my_data_prev['f0'][-1], "%c"))
         first_time_of_last_file = time.mktime(time.strptime(output['f0'][0], "%c"))
         # checking of there is not gap between csv files
+        # in case of gap - don't take prev. file
         if first_time_of_last_file - last_time_of_prev_file < 90.0:
             output = numpy.concatenate((my_data_prev, my_data))[-size:]
-    # print("")
-    # print(output)
-    # print("size: " + str(len(output)))
     return output
 
 
-def generate_graph(target_file, period):
+def generate_graph(target_file, period, debug=False):
     max_size = period * 60
     my_data = get_data_from_file(max_size)
     if not len(my_data):
@@ -68,23 +66,26 @@ def generate_graph(target_file, period):
     logger.debug("dates size: " + str(len(fmt_dates)))
     exmo_prices = my_data['f1'][-max_size:]
     bitfin_prices = my_data['f2'][-max_size:]
-    alerts = my_data['f7'][-max_size:]
-    ticks = list(bitfin_prices)
-    for i, item in enumerate(fmt_dates):
-        # print(str(i) + " " + str(item))
-        if not alerts[i]:
-            ticks[i] = None
-    # print(ticks)
-    # print(exmo_prices)
+    if debug:
+        alerts = my_data['f7'][-max_size:]
+        ticks = list(bitfin_prices)
+        for i, item in enumerate(fmt_dates):
+            # print(str(i) + " " + str(item))
+            if not alerts[i]:
+                ticks[i] = None
+
     logger.debug("exmo size: " + str(len(exmo_prices)))
-    # print(bitfin_prices)
     logger.debug("bitfin size: " + str(len(bitfin_prices)))
 
     fig = plt.figure(tight_layout=True)
+    # fig = plt.figure(figsize=(12.8, 9.6), tight_layout=True)
+    # default size is 6.4 * 4.8 inches
+    # print(fig.get_size_inches())
     ax = fig.add_subplot(111)
     ax.plot_date(fmt_dates, exmo_prices, fmt='b', label='Exmo')
     ax.plot_date(fmt_dates, bitfin_prices, fmt='g', label='Bitfinex')
-    ax.plot_date(fmt_dates, ticks, fmt='r.')
+    if debug:
+        ax.plot_date(fmt_dates, ticks, fmt='r.')
     ax.set_ylabel('BTC/USD')
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d-%m %H:%M'))
     plt.legend()
@@ -94,5 +95,7 @@ def generate_graph(target_file, period):
     plt.savefig(target_file)
     return True
 
-# generate_graph(1234322, 3)
-# get_data_from_file(120)
+
+if __name__ == "__main__":
+    generate_graph('1234322.png', 3)
+    # get_data_from_file(120)

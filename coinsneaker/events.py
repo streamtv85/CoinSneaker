@@ -1,8 +1,13 @@
+import html
 import os
+import random
+import xml
 from time import sleep
 import emoji
+import requests
 
 import telegram
+import urllib3
 
 from coinsneaker import dbmanager, graph
 
@@ -13,7 +18,7 @@ logger = logging.getLogger('bot-service.events')
 
 def send_graph(bot, update, args):
     debug_info(bot, update)
-
+    reply = ""
     target_file = '{0}.png'.format(update.message.chat_id)
     period = 2
     if args:
@@ -21,9 +26,16 @@ def send_graph(bot, update, args):
             period = int(args[0])
         except ValueError:
             logger.warning("invalid argument was given. Using default period: {0}".format(period))
+            reply = "Я, конечно, силен, но график на такое количество часов построить не в силах... Два часа - мой ответ"
+    if not (0 < period < 48):
+        reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
+            period)
+        period = 2
     logger.info(
         "Request to plot graph for {0} hours from chat id {1}, user {2}".format(period, update.message.chat_id,
-                                                                                    update.message.from_user.username))
+                                                                                update.message.from_user.username))
+    if reply:
+        update.message.reply_text(reply)
     graph.generate_graph(target_file, period)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
@@ -70,7 +82,8 @@ def echo(bot, update):
 
 def el(bot, update):
     debug_info(bot, update)
-    bot.send_message(chat_id=update.message.chat_id, text="А Эля милашка, ты знаешь?")
+    bot.send_message(chat_id=update.message.chat_id,
+                     text="Эля - милейшая девушка из всех, с которыми мы когда-либо общались, хоть иногда и врединка)")
 
 
 def unknown(bot, update):
@@ -108,6 +121,24 @@ def master(bot, update):
                      text="Моя Хазяина" + emoji.emojize(":heart_eyes:", use_aliases=True))
     sleep(3)
     bot.send_photo(chat_id=update.message.chat_id, photo=open('tests/test.png', 'rb'))
+
+
+def joke(bot, update):
+    url = "http://umorili.herokuapp.com/api/random?num=100"
+    number = random.randint(0, 100)
+    # print(number)
+    reply = ""
+    response = requests.get(url)
+    if response.status_code != 200:
+        logger.warning(
+            "Status code was {0} when accessing {1}".format(response.status_code, url))
+        reply = "Эм... Боюсь вам эта шутка не понравится..."
+    else:
+        if number > len(response.json()):
+            number = len(response.json())
+        reply = html.unescape(response.json()[number]['elementPureHtml'])
+        logger.debug("joke text: from {0}: {1}".format(url, reply))
+    bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
 def debug_info(bot, update):
