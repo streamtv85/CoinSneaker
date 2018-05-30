@@ -138,6 +138,7 @@ def joke(bot, update):
             number = len(response.json())
         reply = html.unescape(response.json()[number]['elementPureHtml'])
         logger.debug("joke text: from {0}: {1}".format(url, reply))
+        logger.info("Joke sent to user " + str(update.message.from_user.username))
     bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
