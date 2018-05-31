@@ -82,8 +82,8 @@ def generate_graph(target_file, period, debug=False):
     logger.debug("exmo size: " + str(len(exmo_prices)))
     logger.debug("bitfin size: " + str(len(bitfin_prices)))
 
-    fig = plt.figure(tight_layout=True)
-    # fig = plt.figure(figsize=(12.8, 9.6), tight_layout=True)
+    # fig = plt.figure(tight_layout=True)
+    fig = plt.figure(figsize=(9.6, 7.2), tight_layout=True)
     # default size is 6.4 * 4.8 inches
     # print(fig.get_size_inches())
     ax = fig.add_subplot(111)
