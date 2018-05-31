@@ -142,6 +142,32 @@ def joke(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
+def history(bot, update, args):
+    filenames = graph.get_exchange_data_files()
+    number = 0
+    if 'list' in args:
+        s = "List of exchange history files (newest first):\n"
+        for index, item in enumerate(filenames):
+            s += "{0}: {1}\n".format(index, item)
+        logger.info("Request to show list of exchange data files from: " + update.message.from_user.username)
+        update.message.reply_text(s)
+    else:
+        if args:
+            try:
+                number = int(args[0])
+            except ValueError:
+                logger.warning("invalid argument was given. Using default: {0}".format(number))
+                update.message.reply_text("Invalid index. Please specify integer number.")
+                return
+            if not (0 < number < len(filenames)):
+                update.message.reply_text(
+                    "Invalid index. Please specify from range: {0}..{1}".format(0, len(filenames) - 1))
+                return
+        logger.info(
+            "Sending exchange data file {0} to user {1} ".format(filenames[number], update.message.from_user.username))
+        bot.send_document(chat_id=update.message.chat_id, document=open(filenames[number], 'rb'))
+
+
 def debug_info(bot, update):
     logger.debug(' > received message from chat id: ' + str(update.message.chat_id))
     logger.debug(' > from user: ' + str(update.message.from_user))
