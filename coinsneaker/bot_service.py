@@ -97,6 +97,9 @@ def add_command_handlers(disp):
     graph_handler = CommandHandler('graph', events.send_graph, pass_args=True)
     disp.add_handler(graph_handler)
 
+    history_handler = CommandHandler('history', events.history, pass_args=True)
+    disp.add_handler(history_handler)
+
     joke_handler = CommandHandler('joke', events.joke)
     disp.add_handler(joke_handler)
 

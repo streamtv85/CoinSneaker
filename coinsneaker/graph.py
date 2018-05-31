@@ -14,14 +14,19 @@ from coinsneaker.configmanager import config
 logger = logging.getLogger('bot-service.graph')
 
 
-def get_data_from_file(size):
+def get_exchange_data_files():
     pattern = os.path.join(config.get('csvFolder'), config.get('csvPrefix') + "*.csv")
     found_files = glob.glob(pattern)
     found_files.sort(key=os.path.getmtime, reverse=True)
     if not len(found_files):
         logger.warning("No files with exchange data was found. Nothing to draw yet.")
         return []
-    logger.info("{0} is the last found file with exchange data".format(found_files[0]))
+    logger.debug("{0} is the last found file with exchange data".format(found_files[0]))
+    return found_files
+
+
+def get_data_from_file(size):
+    found_files = get_exchange_data_files()
     data_filename = found_files[0]
     my_data = numpy.genfromtxt(data_filename, delimiter=',', skip_header=1, dtype=None, encoding=None,
                                usecols=[0, 1, 2, 3, 4, 5, 6, 7])
@@ -56,7 +61,7 @@ def generate_graph(target_file, period, debug=False):
                                                                                                            len(
                                                                                                                fmt_dates)))
         max_size = len(fmt_dates)
-    logger.info("plotting graph for period {0} minutes starting from {1} to {2} ".format(max_size,
+    logger.info("plotting graph for {0} minutes from {1} to {2} ".format(max_size,
                                                                                          matplotlib.dates.num2date(
                                                                                              fmt_dates[0]).strftime(
                                                                                              "%d-%m_%H:%M"),
