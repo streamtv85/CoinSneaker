@@ -4,9 +4,11 @@ import glob
 import logging
 import math
 import os
+import sys
 import time
 from logging.handlers import TimedRotatingFileHandler
 from shutil import make_archive
+from threading import Thread
 
 import emoji
 from telegram import MessageEntity
@@ -105,7 +107,7 @@ def add_command_handlers(disp):
 
     # should be added as the LAST handler
     unknown_handler = MessageHandler(Filters.command, events.unknown)
-    dispatcher.add_handler(unknown_handler)
+    disp.add_handler(unknown_handler)
 
 
 def get_exchange_data():
@@ -227,12 +229,10 @@ def archive_old_files(pattern):
 
 
 # main entry point, executed when the file is being run as a script
-
-if __name__ == "__main__":
+def main():
     logger.info("Current folder is: " + cwd)
     updater = Updater(token=config.get('token'))
     job_queue = updater.job_queue
-
     logger.info("Checking if bot is okay")
     logger.info(updater.bot.get_me())
     chats = dbmanager.get_all_chats()
@@ -240,6 +240,18 @@ if __name__ == "__main__":
         logger.info('List of subscribers:')
         logger.info(str(chats))
     dispatcher = updater.dispatcher
+
+    def stop_and_restart():
+        """Gracefully stop the Updater and replace the current process with a new one"""
+        updater.stop()
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+    def restart(bot, update):
+        update.message.reply_text('Bot is restarting...')
+        Thread(target=stop_and_restart).start()
+
+    dispatcher.add_handler(CommandHandler('restart', restart, filters=Filters.user(username='@streamtv85')))
+
     add_command_handlers(dispatcher)
     add_message_handlers(dispatcher)
     logger.debug("List of registered handlers:")
@@ -250,3 +262,9 @@ if __name__ == "__main__":
     # polling loop
     logger.info("The bot has started.")
     updater.start_polling()
+    logger.info("The bot is idle.")
+    updater.idle()
+
+
+if __name__ == "__main__":
+    main()
