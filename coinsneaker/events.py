@@ -1,6 +1,7 @@
 import html
 import os
 import random
+import re
 import xml
 from time import sleep
 import emoji
@@ -137,6 +138,9 @@ def joke(bot, update):
         if number > len(response.json()):
             number = len(response.json())
         reply = html.unescape(response.json()[number]['elementPureHtml'])
+        reply = re.sub(r'<a.*/a>,*', '', str(reply))
+        reply = re.sub(r'<[^<]+?>', '', str(reply))
+        reply = re.sub(r'Проголосовать:', '', str(reply))
         logger.debug("joke text: from {0}: {1}".format(url, reply))
         logger.info("Joke sent to user " + str(update.message.from_user.username))
     bot.send_message(chat_id=update.message.chat_id, text=reply)
