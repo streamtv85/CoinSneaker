@@ -162,7 +162,7 @@ def callback_exchanges_data(bot, job):
         logger.info("Alert is now True. Alert messages sent! Text: {0}".format(text))
         alert = True
     else:
-        if (math.fabs(percent) <= 0.2) or (1 < percent < 3.0) or (1.8 < -percent < 3.0):
+        if (math.fabs(percent) <= 0.2) or (1 < percent < 3.0) or (1.8 < -percent < 3.0) or (0.5 < percent < 0.65):
             excl = emoji.emojize(":exclamation:", use_aliases=True)
             if not alert:
                 text = excl + "Внимание" + excl + " Разница цен BTC/USD между Bitfinex и Exmo достигла {0}%, а именно {1} USD".format(
