@@ -283,7 +283,7 @@ def main():
         if os.path.exists(full_path):
             update.message.reply_text('Triggering bot update process... See you later!')
             updater.stop()
-            os.system(full_path + " &")
+            os.system(full_path + " > update.log &")
         else:
             update.message.reply_text("Sorry haven't found and update script. Please do the update manually.")
 
