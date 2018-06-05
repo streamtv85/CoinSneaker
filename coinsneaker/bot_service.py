@@ -285,8 +285,8 @@ def main():
         if os.path.exists(full_path):
             logger.info("sending notification message")
             update.message.reply_text('Triggering bot update process... See you later!')
-            logger.info("stopping updater")
-            updater.stop()
+            # logger.info("stopping updater")
+            # updater.stop()
             logger.info("executing the script")
             os.system(full_path + " > update.log &")
         else:
