@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 
 SERVICE_DIR=/usr/local/bin/bot-service
