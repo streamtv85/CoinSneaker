@@ -23,6 +23,7 @@ cd $SERVICE_DIR
 
 sudo chmod 755 coinsneaker/bot_service.py
 sudo chmod 755 ./run.sh
+sudo chmod 755 ./update.sh
 
 #Install python packages to virtualenv
 virtualenv -p python3 bot_env

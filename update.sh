@@ -14,5 +14,11 @@ cd $HOME_DIR && git pull
 \cp -rf $HOME_DIR/* $SERVICE_DIR
 sudo chmod 755 $SERVICE_DIR/coinsneaker/bot_service.py
 sudo chmod 755 $SERVICE_DIR/run.sh
+sudo chmod 755 $SERVICE_DIR/update.sh
 
-screen -S bot -d -m /usr/local/bin/bot-service/run.sh
+#install any additional packages if needed
+source bot_env/bin/activate
+pip install -e .
+deactivate
+
+screen -S bot -d -m $SERVICE_DIR/run.sh
