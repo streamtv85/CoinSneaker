@@ -13,6 +13,8 @@ from threading import Thread
 import emoji
 from telegram import MessageEntity
 from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
+from telegram.error import (TelegramError, Unauthorized, BadRequest,
+                            TimedOut, ChatMigrated, NetworkError)
 
 from coinsneaker import events, dbmanager, exchange
 from coinsneaker.configmanager import config
@@ -228,6 +230,30 @@ def archive_old_files(pattern):
                 os.remove(f)
 
 
+def error_callback(bot, update, error):
+    # for the future - if we need to handle any specific Telegram exceptions
+    try:
+        raise error
+    except Unauthorized:
+        pass
+        # remove update.message.chat_id from conversation list
+    except BadRequest:
+        pass
+    # handle malformed requests - read more below!
+    except TimedOut:
+        pass
+    # handle slow connection problems
+    except NetworkError:
+        pass
+    # handle other connection problems
+    except ChatMigrated as e:
+        pass
+    # the chat_id of a group has changed, use e.new_chat_id instead
+    except TelegramError:
+        pass
+    # handle all other telegram related errors
+
+
 # main entry point, executed when the file is being run as a script
 def main():
     logger.info("Current folder is: " + cwd)
@@ -250,7 +276,20 @@ def main():
         update.message.reply_text('Bot is restarting...')
         Thread(target=stop_and_restart).start()
 
+    # Linux only
+    def update(bot, update):
+        path = os.path.dirname(os.path.abspath(__file__))
+        full_path = os.path.abspath(os.path.join(path, "..", "update.sh"))
+        if os.path.exists(full_path):
+            update.message.reply_text('Triggering bot update process... See you later!')
+            updater.stop()
+            os.system(full_path + " &")
+        else:
+            update.message.reply_text("Sorry haven't found and update script. Please do the update manually.")
+
+    # dispatcher.add_error_handler(error_callback)
     dispatcher.add_handler(CommandHandler('restart', restart, filters=Filters.user(username='@streamtv85')))
+    dispatcher.add_handler(CommandHandler('update', update, filters=Filters.user(username='@streamtv85')))
 
     add_command_handlers(dispatcher)
     add_message_handlers(dispatcher)
