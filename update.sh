@@ -17,6 +17,7 @@ sudo chmod 755 $SERVICE_DIR/run.sh
 sudo chmod 755 $SERVICE_DIR/update.sh
 
 #install any additional packages if needed
+cd $SERVICE_DIR
 source bot_env/bin/activate
 pip install -e .
 deactivate
