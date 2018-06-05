@@ -273,11 +273,13 @@ def main():
         os.execl(sys.executable, sys.executable, *sys.argv)
 
     def restart(bot, update):
+        logger.warning("Received restart command via Telegram")
         update.message.reply_text('Bot is restarting...')
         Thread(target=stop_and_restart).start()
 
     # Linux only
     def update(bot, update):
+        logger.warning("Received Update command via Telegram")
         path = os.path.dirname(os.path.abspath(__file__))
         full_path = os.path.abspath(os.path.join(path, "..", "update.sh"))
         if os.path.exists(full_path):
@@ -285,6 +287,7 @@ def main():
             updater.stop()
             os.system(full_path + " > update.log &")
         else:
+            logger.error("Update script was not found!")
             update.message.reply_text("Sorry haven't found and update script. Please do the update manually.")
 
     # dispatcher.add_error_handler(error_callback)
