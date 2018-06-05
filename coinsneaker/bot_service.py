@@ -288,7 +288,7 @@ def main():
             # logger.info("stopping updater")
             # updater.stop()
             logger.info("executing the script")
-            os.system(full_path + " > update.log &")
+            os.system("nohup " + full_path + " &")
         else:
             logger.error("Update script was not found!")
             update.message.reply_text("Sorry haven't found and update script. Please do the update manually.")
