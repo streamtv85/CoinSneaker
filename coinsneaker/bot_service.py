@@ -275,6 +275,9 @@ def main():
     def restart(bot, update):
         logger.warning("Received restart command via Telegram")
         update.message.reply_text('Bot is restarting...')
+        with open(master_file, 'r+') as f:
+            f.truncate()
+            f.write(update.message.chat_id)
         Thread(target=stop_and_restart).start()
 
     # Linux only
@@ -285,8 +288,9 @@ def main():
         if os.path.exists(full_path):
             logger.debug("sending notification message")
             update.message.reply_text('Triggering bot update process... See you later!')
-            # logger.debug("stopping updater")
-            # updater.stop()
+            with open(master_file, 'r+') as f:
+                f.truncate()
+                f.write(update.message.chat_id)
             logger.debug("executing the script")
             os.system("nohup " + full_path + " &")
         else:
@@ -307,6 +311,12 @@ def main():
     # polling loop
     logger.info("The bot has started.")
     updater.start_polling()
+    master_file = "master.txt"
+    if os.path.exists(master_file):
+        with open(master_file, 'r') as f:
+            text = f.read()
+        updater.bot.send_message(int(text), "I'm back bitches!")
+        os.remove(master_file)
     logger.info("The bot is idle.")
     updater.idle()
 
