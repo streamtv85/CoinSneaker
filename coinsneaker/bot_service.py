@@ -321,7 +321,7 @@ def main():
             f.close()
         logger.info("read chat id from " + master_file + " file: " + text)
         updater.bot.send_message(int(text), "I'm back bitches!")
-        os.remove(master_file)
+        # os.remove(master_file)
     logger.info("The bot is idle.")
     updater.idle()
 
