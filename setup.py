@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='coinsneaker',
-      version='0.1',
+      version='0.2',
       description='Telegram bot for crypto analytics',
       url='https://github.com/streamtv85/CoinSneaker',
       author='streamtv85',

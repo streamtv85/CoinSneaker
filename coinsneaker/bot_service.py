@@ -275,8 +275,10 @@ def main():
     def restart(bot, update):
         logger.warning("Received restart command via Telegram")
         update.message.reply_text('Bot is restarting...')
+        logger.debug("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
         with open(master_file, 'w') as f:
             f.write(str(update.message.chat_id))
+        logger.debug("Restarting the thread")
         Thread(target=stop_and_restart).start()
 
     # Linux only
@@ -287,7 +289,6 @@ def main():
         if os.path.exists(full_path):
             logger.debug("sending notification message")
             update.message.reply_text('Triggering bot update process... See you later!')
-            logger.debug("master filename is: " + master_file)
             logger.debug("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
             with open(master_file, 'w') as f:
                 f.write(str(update.message.chat_id))
