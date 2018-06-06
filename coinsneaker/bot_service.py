@@ -277,7 +277,7 @@ def main():
         update.message.reply_text('Bot is restarting...')
         with open(master_file, 'w') as f:
             # f.truncate()
-            f.write(update.message.chat_id)
+            f.write(str(update.message.chat_id))
         Thread(target=stop_and_restart).start()
 
     # Linux only
@@ -292,7 +292,7 @@ def main():
             logger.info("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
             with open(master_file, 'w') as f:
                 # f.truncate()
-                f.write(update.message.chat_id)
+                f.write(str(update.message.chat_id))
                 f.close()
             logger.debug("executing the script")
             os.system("nohup " + full_path + " &")
