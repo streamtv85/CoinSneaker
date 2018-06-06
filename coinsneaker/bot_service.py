@@ -288,8 +288,10 @@ def main():
         if os.path.exists(full_path):
             logger.debug("sending notification message")
             update.message.reply_text('Triggering bot update process... See you later!')
+            logger.info("master filename is: " + master_file)
             with open(master_file, 'r+') as f:
                 f.truncate()
+                logger.info("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
                 f.write(update.message.chat_id)
             logger.debug("executing the script")
             os.system("nohup " + full_path + " &")
@@ -315,6 +317,7 @@ def main():
     if os.path.exists(master_file):
         with open(master_file, 'r') as f:
             text = f.read()
+        logger.info("read chat id from " + master_file + " file: " + text)
         updater.bot.send_message(int(text), "I'm back bitches!")
         os.remove(master_file)
     logger.info("The bot is idle.")
