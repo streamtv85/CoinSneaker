@@ -314,7 +314,7 @@ def main():
     # polling loop
     logger.info("The bot has started.")
     updater.start_polling()
-    master_file = "master.txt"
+    master_file = "/tmp/master.txt"
     if os.path.exists(master_file):
         with open(master_file, 'r') as f:
             text = f.read()
