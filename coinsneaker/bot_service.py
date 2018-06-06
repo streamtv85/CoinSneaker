@@ -276,7 +276,6 @@ def main():
         logger.warning("Received restart command via Telegram")
         update.message.reply_text('Bot is restarting...')
         with open(master_file, 'w') as f:
-            # f.truncate()
             f.write(str(update.message.chat_id))
         Thread(target=stop_and_restart).start()
 
@@ -288,12 +287,10 @@ def main():
         if os.path.exists(full_path):
             logger.debug("sending notification message")
             update.message.reply_text('Triggering bot update process... See you later!')
-            logger.info("master filename is: " + master_file)
-            logger.info("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
+            logger.debug("master filename is: " + master_file)
+            logger.debug("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
             with open(master_file, 'w') as f:
-                # f.truncate()
                 f.write(str(update.message.chat_id))
-                f.close()
             logger.debug("executing the script")
             os.system("nohup " + full_path + " &")
         else:
@@ -318,10 +315,9 @@ def main():
     if os.path.exists(master_file):
         with open(master_file, 'r') as f:
             text = f.read()
-            f.close()
-        logger.info("read chat id from " + master_file + " file: " + text)
+        logger.debug("read chat id from " + master_file + " file: " + text)
         updater.bot.send_message(int(text), "I'm back bitches!")
-        # os.remove(master_file)
+        os.remove(master_file)
     logger.info("The bot is idle.")
     updater.idle()
 
