@@ -80,6 +80,21 @@ or (better)
 ```
 curl -L https://github.com/streamtv85/CoinSneaker/raw/master/update.sh | bash
 ```
+
+OR you can update the bot with Telegram command /update
+for this to work,
+make sure that the user you are running the bot with does have permissions to run sudo commands without password prompt!
+How to enable this:
+```
+sudo adduser <username> sudo
+sudo visudo
+```
+In the editor, append following line
+```
+<username> ALL=(ALL) NOPASSWD:ALL
+```
+And save your changes
+
 ## Telegram commands:
 
 - subscribe - Receive notifications when prices reach certain levels
