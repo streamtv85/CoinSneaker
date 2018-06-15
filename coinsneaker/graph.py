@@ -62,12 +62,12 @@ def generate_graph(target_file, period, debug=False):
                                                                                                                fmt_dates)))
         max_size = len(fmt_dates)
     logger.info("plotting graph for {0} minutes from {1} to {2} ".format(max_size,
-                                                                                         matplotlib.dates.num2date(
-                                                                                             fmt_dates[0]).strftime(
-                                                                                             "%d-%m_%H:%M"),
-                                                                                         matplotlib.dates.num2date(
-                                                                                             fmt_dates[-1]).strftime(
-                                                                                             "%d-%m_%H:%M")))
+                                                                         matplotlib.dates.num2date(
+                                                                             fmt_dates[0]).strftime(
+                                                                             "%d-%m_%H:%M"),
+                                                                         matplotlib.dates.num2date(
+                                                                             fmt_dates[-1]).strftime(
+                                                                             "%d-%m_%H:%M")))
     logger.debug("dates size: " + str(len(fmt_dates)))
     exmo_prices = my_data['f1'][-max_size:]
     bitfin_prices = my_data['f2'][-max_size:]
@@ -93,6 +93,8 @@ def generate_graph(target_file, period, debug=False):
         ax.plot_date(fmt_dates, ticks, fmt='r.')
     ax.set_ylabel('BTC/USD')
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d-%m %H:%M'))
+    ax2 = fig.add_subplot(2)
+    ax2.plot_date(fmt_dates, exmo_prices)
     plt.legend()
     plt.grid()
     fig.align_labels()
