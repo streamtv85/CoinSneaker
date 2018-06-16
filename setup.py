@@ -11,6 +11,9 @@ setup(name='coinsneaker',
       install_requires=[
           'emoji',
           'requests',
-          'python-telegram-bot', 'matplotlib', 'numpy'
+          'python-telegram-bot',
+          'matplotlib',
+          'numpy',
+          'ccxt'
       ],
       zip_safe=False)

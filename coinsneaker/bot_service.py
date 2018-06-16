@@ -16,7 +16,7 @@ from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
 
-from coinsneaker import events, dbmanager, exchange
+from coinsneaker import events, dbmanager, exchange, ExchangeWatcher
 from coinsneaker.configmanager import config
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -48,6 +48,10 @@ price_ma_period_fast = 3
 price_avg_ma_fast = 0.0
 price_exmo = 0.0
 price_bitfin = 0.0
+
+exmo_watcher = ExchangeWatcher('exmo', 'BTC/USD')
+bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USD')
+data = exchange.DataHistoryManager(bitfin_watcher, exmo_watcher)
 
 alert = False
 
@@ -140,14 +144,11 @@ def get_exchange_data():
 
 
 def callback_exchanges_data(bot, job):
-    global alert, price_diff
+    global alert, price_diff, data
+    data.update()
     price_diff = get_exchange_data()
 
     percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
-    # if price_diff * price_diff_prev < 0:
-    # price difference changed sign
-    # text = "Warning! Exmo - Bitfinex price difference has changed. Now it equals {0}, before it was {1}".format(
-    #     price_diff, price_diff_prev)
 
     logger.debug(
         "Avg price: {0}, Exmo price: {1}, Bitfinex price: {2}, diff: {3}%, abs(diff): {4}%".format(
