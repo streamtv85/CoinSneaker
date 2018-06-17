@@ -36,6 +36,7 @@ def send_graph(bot, update, args):
     logger.info(
         "Request to plot graph for {0} hours from chat id {1}, user {2}".format(period, update.message.chat_id,
                                                                                 update.message.from_user.username))
+    logger.info("target file: " + target_file)
     if reply:
         update.message.reply_text(reply)
     graph.generate_graph(target_file, period)

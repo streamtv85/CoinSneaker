@@ -150,37 +150,84 @@ class DataHistoryManager:
             self.history.pop(0)
 
 
-class BitfinexWebsocketWatcher:
+class BitfinexBookWatcher:
 
     def __init__(self):
+        self.bids = dict()
+        self.asks = dict()
+        self.bid_depth = 0
+        self.bid_ma_slow = 0
+        self.bid_ma_fast = 0
+        self.ask_depth = 0
+        self.ask_ma_slow = 0
+        self.ask_ma_fast = 0
+
         self.wss = BtfxWss()
         self.wss.start()
         while not self.wss.conn.connected.is_set():
             time.sleep(1)
-        self.book_q = None
-        time.sleep(2)
 
     def start(self):
         # for P1 precision usual width of order book is ~100 USD (for BTC/USD price ~6500)
         # for wider range (about 1500 USD) use P2 precision. But the price will be rounded to tens
         self.wss.subscribe_to_order_book('BTCUSD', prec="P1", len=100)
+        # waiting for a bit to receive the book snapshot
+        time.sleep(2)
 
-    def has_updates(self):
-        self.book_q = self.wss.books('BTCUSD')  # returns a Queue object for the pair.
-        return not self.book_q.empty()
-
+    # call get_updates regularly to clear the queue!! Otherwise you may get OutOfMemory errors
     def get_updates(self):
-        self.book_q = self.wss.books('BTCUSD')  # returns a Queue object for the pair.
-        result = []
-        while not self.book_q.empty():
-            get = self.book_q.get()
+        book_q = self.wss.books('BTCUSD')  # returns a Queue object for the pair.
+        # result = []
+        while not book_q.empty():
+            get = book_q.get()
             # print(get)
-            result.append(get)
-        return result
+            # result.append(get)
+            book_item, tag = get
+            self.fill_the_book(book_item)
+        self.bid_depth = sum(self.bids.values())
+        self.bid_ma_fast = update_ma(self.bid_depth, self.bid_ma_fast, 5)
+        self.bid_ma_slow = update_ma(self.bid_depth, self.bid_ma_slow, 90)
+        self.ask_depth = sum(self.asks.values())
+        self.ask_ma_fast = update_ma(self.ask_depth, self.ask_ma_fast, 5)
+        self.ask_ma_slow = update_ma(self.ask_depth, self.ask_ma_slow, 90)
+        logger.debug("Market depth: bids: {0}, ma5: {1} ma90: {2} |  asks: {3}, ma5: {4} ma90: {5}".format(
+            round(self.bid_depth),
+            round(self.bid_ma_fast),
+            round(self.bid_ma_slow),
+            round(self.ask_depth),
+            round(self.ask_ma_fast),
+            round(self.ask_ma_slow)
+        ))
+        # return result
 
-    def close(self):
+    # better call stop() at the end of the program (and on TERM signal)
+    def stop(self):
+        logger.debug("unsubscribe")
         self.wss.unsubscribe_from_order_book('BTCUSD')
+        logger.debug("stopping the socket")
         self.wss.stop()
+        logger.debug("stopped.")
+
+    def fill_the_book(self, input_list):
+        for row in input_list:
+            if isinstance(row[0], list):
+                self.fill_the_book(row)
+            else:
+                price = str(row[0])
+                count = row[1]
+                amt = row[2]
+                if count != 0:
+                    if amt > 0:
+                        self.bids[price] = amt
+                    else:
+                        self.asks[price] = abs(amt)
+                else:
+                    if amt > 0:
+                        if price in self.bids.keys():
+                            del (self.bids[price])
+                    elif amt < 0:
+                        if price in self.asks.keys():
+                            del (self.asks[price])
 
 
 if __name__ == "__main__":
@@ -194,59 +241,13 @@ if __name__ == "__main__":
     # print("BTC price on Bitfinex: " + str(bitfin_watcher.price) + " USD")
     # print(data.history)
 
-    bids = dict()
-    asks = dict()
+    # bids = dict()
+    # asks = dict()
 
-
-    def fill_the_book(input_list, bids_book: dict, asks_book: dict):
-        for row in input_list:
-            if isinstance(row[0], list):
-                fill_the_book(row, bids_book, asks_book)
-            else:
-                price = str(row[0])
-                count = row[1]
-                amt = row[2]
-                if count != 0:
-                    if amt > 0:
-                        bids_book[price] = amt
-                    else:
-                        asks_book[price] = abs(amt)
-
-                else:
-                    if amt > 0:
-                        if price in bids_book.keys():
-                            del (bids_book[price])
-                    elif amt < 0:
-                        if price in asks_book.keys():
-                            del (asks_book[price])
-
-
-    btf = BitfinexWebsocketWatcher()
+    btf = BitfinexBookWatcher()
     btf.start()
-    print("socket connection opened. Waiting for 5 sec for initial data")
-    time.sleep(5)
-    for i in range(1, 5):
-        upd = btf.get_updates()
-        if upd:
-            # print(upd)
-            print("")
-            for item in upd:
-                book_item, tag = item
-                fill_the_book(book_item, bids, asks)
-
-            bid_depth = sum(bids.values())
-            ask_depth = sum(asks.values())
-            print("total: bids: {0}, asks: {1}".format(bid_depth, ask_depth))
-
+    for i in range(1, 50):
+        btf.get_updates()
         time.sleep(1)
 
-    btf.close()
-    print("")
-    bid_prices = list(reversed(sorted(bids.keys())))
-    # print("bids: " + str(len(bid_prices)))
-    ask_prices = list(sorted(asks.keys()))
-    # print("asks: " + str(len(ask_prices)))
-    length = min(len(bid_prices), len(ask_prices))
-
-    for i in range(length):
-        print("%s: %s | %s: %s" % (bids[bid_prices[i]], bid_prices[i], ask_prices[i], asks[ask_prices[i]]))
+    btf.stop()

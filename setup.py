@@ -14,6 +14,7 @@ setup(name='coinsneaker',
           'python-telegram-bot',
           'matplotlib',
           'numpy',
-          'ccxt'
+          'ccxt',
+          'btfxwss'
       ],
       zip_safe=False)

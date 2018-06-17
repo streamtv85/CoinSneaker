@@ -16,7 +16,7 @@ from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
 
-from coinsneaker import events, dbmanager, exchange, ExchangeWatcher
+from coinsneaker import events, dbmanager, exchange, ExchangeWatcher, BitfinexBookWatcher
 from coinsneaker.configmanager import config
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -52,6 +52,7 @@ price_bitfin = 0.0
 exmo_watcher = ExchangeWatcher('exmo', 'BTC/USD')
 bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USD')
 data = exchange.DataHistoryManager(bitfin_watcher, exmo_watcher)
+btf = BitfinexBookWatcher()
 
 alert = False
 
@@ -64,7 +65,29 @@ def send_prices(bot, update):
         round(price_diff_ma_fast, 2),
         percent)
     logger.info(
-        "Price request received: chat id {0}, from user {1} (id: {2}). Sending text: {3}".format(str(
+        "Price request: chat id {0}, from {1} ({2}). Sending text: {3}".format(str(
+            update.message.chat_id), update.message.from_user.username,
+            update.message.from_user.id, message))
+    bot.send_message(chat_id=update.message.chat_id, text=message)
+
+
+def send_orderbook(bot, update):
+    bid_total = btf.bid_depth
+    bids = sorted(btf.bids.keys())
+    # bids_price_range = abs(round(bids[0] - bids[-1]))
+    ask_total = btf.ask_depth
+    asks = sorted(btf.asks.keys())
+    # asks_price_range = abs(round(asks[0] - asks[-1]))
+    message = "BTC/USD стаканы Bitfinex:\nПокупка {0} BTC (в диапазоне {1}..{2} USD)\nПродажа {3} BTC (в диапазоне {4}..{5} USD)".format(
+        round(bid_total, 2),
+        bids[0],
+        bids[-1],
+        round(ask_total, 2),
+        asks[0],
+        asks[-1]
+    )
+    logger.info(
+        "Orderbook request: chat id {0}, from {1} ({2}). Sending text: {3}".format(str(
             update.message.chat_id), update.message.from_user.username,
             update.message.from_user.id, message))
     bot.send_message(chat_id=update.message.chat_id, text=message)
@@ -111,6 +134,9 @@ def add_command_handlers(disp):
     joke_handler = CommandHandler('joke', events.joke)
     disp.add_handler(joke_handler)
 
+    ob_handler = CommandHandler('orderbook', send_orderbook)
+    disp.add_handler(ob_handler)
+
     # should be added as the LAST handler
     unknown_handler = MessageHandler(Filters.command, events.unknown)
     disp.add_handler(unknown_handler)
@@ -141,6 +167,10 @@ def get_exchange_data():
         price_diff_prev = price_diff_ma_fast
     # logger.info("price diff: " + str(price_diff))
     return price_diff
+
+
+def callback_orderbook_updates(bot, job):
+    btf.get_updates()
 
 
 def callback_exchanges_data(bot, job):
@@ -267,10 +297,13 @@ def main():
         logger.info('List of subscribers:')
         logger.info(str(chats))
     dispatcher = updater.dispatcher
+    logger.info("Starting Bitfinex websocket client")
+    # btf.start()
 
     def stop_and_restart():
         """Gracefully stop the Updater and replace the current process with a new one"""
         updater.stop()
+        btf.stop()
         os.execl(sys.executable, sys.executable, *sys.argv)
 
     def restart(bot, update):
@@ -293,7 +326,9 @@ def main():
             logger.debug("writing chat ID {0} to {1}".format(update.message.chat_id, master_file))
             with open(master_file, 'w') as f:
                 f.write(str(update.message.chat_id))
-            logger.debug("executing the script")
+            logger.debug("Stopping Bitfinex WebSocket client")
+            btf.stop()
+            logger.debug("Executing the script")
             os.system("nohup " + full_path + " &")
         else:
             logger.error("Update script was not found!")
@@ -308,9 +343,10 @@ def main():
     logger.debug("List of registered handlers:")
     for current in list(dispatcher.handlers.values())[0]:
         logger.debug(str(current.callback.__name__))
-    logger.info("init regular job for execution")
+    logger.info("init regular job to gather exchange data every minute")
     job_minute = job_queue.run_repeating(callback_exchanges_data, interval=60, first=0)
-    # polling loop
+    logger.info("init regular job to get Bitfinex orderbook every second")
+    # job_orderbook_second = job_queue.run_repeating(callback_orderbook_updates, interval=1, first=0)
     logger.info("The bot has started.")
     updater.start_polling()
     master_file = "/tmp/master.txt"
