@@ -127,7 +127,7 @@ def master(bot, update):
 
 
 def joke(bot, update):
-    sources = ['bash.im', 'anekdot.ru', 'det.org.ru']
+    sources = ['bash.im', 'anekdot.ru']
     url = "http://umorili.herokuapp.com/api/sources"
     source_number = random.randint(0, len(sources) - 1)
     reply = ""
