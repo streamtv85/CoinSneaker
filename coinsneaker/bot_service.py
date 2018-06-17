@@ -59,7 +59,7 @@ alert = False
 
 def send_prices(bot, update):
     percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
-    message = "Цены BTC/USD: Exmo {0}, Bitfinex {1}, разница цен: {2} USD ({3}%)".format(
+    message = "Цены BTC/USD:\nBitfinex {1} USD,\nExmo    {0} USD,\nразница цен: {2} USD ({3}%)".format(
         price_exmo,
         price_bitfin,
         round(price_diff_ma_fast, 2),
@@ -78,10 +78,10 @@ def send_orderbook(bot, update):
     ask_total = btf.ask_depth
     asks = sorted(btf.asks.keys())
     # asks_price_range = abs(round(asks[0] - asks[-1]))
-    message = "BTC/USD стаканы Bitfinex:\nПокупка {0} BTC (в диапазоне {1}..{2} USD)\nПродажа {3} BTC (в диапазоне {4}..{5} USD)".format(
+    message = "BTC/USD стаканы Bitfinex:\nПокупка {0} BTC (диапазон {1}..{2} USD)\nПродажа {3} BTC (диапазон {4}..{5} USD)".format(
         round(bid_total, 2),
-        bids[0],
         bids[-1],
+        bids[0],
         round(ask_total, 2),
         asks[0],
         asks[-1]
