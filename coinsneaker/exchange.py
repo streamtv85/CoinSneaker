@@ -43,7 +43,7 @@ def get_data_from_api(base_url, path):
     assert response.status_code == 200, logger.error(
         "Status code was {0} when accessing {1}".format(response.status_code, base_url + path))
     logger.debug("response from " + base_url + path)
-    logger.debug(response.json())
+    # logger.debug(response.json())
     return response.json()
 
 
@@ -82,15 +82,9 @@ class ExchangeWatcher:
         self.bid = ticker['bid']
         self.spread = self.ask - self.bid
         self.volume = ticker['baseVolume']
-        self.ma60 = self.update_ma(self.price, self.ma60, 60)
-        self.ma150 = self.update_ma(self.price, self.ma150, 150)
-        self.volume_ma8 = self.update_ma(self.volume, self.volume_ma8, 8)
-
-    @staticmethod
-    def update_ma(new_value, old_value, period):
-        if old_value == 0:
-            old_value = new_value
-        return (new_value + period * old_value) / (period + 1)
+        self.ma60 = update_ma(self.price, self.ma60, 60)
+        self.ma150 = update_ma(self.price, self.ma150, 150)
+        self.volume_ma8 = update_ma(self.volume, self.volume_ma8, 8)
 
 
 class DataHistoryManager:
@@ -99,11 +93,11 @@ class DataHistoryManager:
         self.primary = primary  # Bitfinex
         self.secondary = secondary  # Exmo
         self.diff = 0
-        self.percent = 0
         self.avg = 0
         self.avg_ma_fast = 0
         self.diff_ma_slow = 0
         self.diff_ma_fast = 0
+        self.percent = 0
         self.history = []
 
         self.ma_period_slow = 20
@@ -118,20 +112,18 @@ class DataHistoryManager:
                        "diff percent",
                        "{} volume".format(self.secondary.ex.name),
                        "{} volume".format(self.primary.ex.name),
-                       "alert",
-                       "\n",
                        ]
-        print(','.join(self.header))
+        # print(','.join(self.header))
 
     def update(self):
         self.primary.update()
         self.secondary.update()
         self.diff = round(self.primary.price - self.secondary.price, 2)
         self.avg = round((self.primary.price + self.secondary.price) / 2, 2)
-        self.avg_ma_fast = ExchangeWatcher.update_ma(self.avg, self.avg_ma_fast, self.ma_period_fast)
+        self.avg_ma_fast = update_ma(self.avg, self.avg_ma_fast, self.ma_period_fast)
         # MA(diff) and diff(MA) should be the same actually
-        self.diff_ma_slow = ExchangeWatcher.update_ma(self.diff, self.diff_ma_slow, self.ma_period_slow)
-        self.diff_ma_fast = ExchangeWatcher.update_ma(self.diff, self.diff_ma_fast, self.ma_period_fast)
+        self.diff_ma_slow = update_ma(self.diff, self.diff_ma_slow, self.ma_period_slow)
+        self.diff_ma_fast = update_ma(self.diff, self.diff_ma_fast, self.ma_period_fast)
         self.percent = round(self.diff_ma_fast / self.avg_ma_fast * 100, 3)
         ticker = [
             time.strftime("%c"),
@@ -141,8 +133,8 @@ class DataHistoryManager:
             round(self.diff_ma_fast, 2),
             round(self.diff_ma_slow, 2),
             self.percent,
-            self.secondary.volume,
-            self.primary.volume,
+            round(self.secondary.volume, 4),
+            round(self.primary.volume, 4),
         ]
         self.history.append(ticker)
         # Limiting history size to certain amount (to speed up graph command)
