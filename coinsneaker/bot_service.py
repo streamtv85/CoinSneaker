@@ -58,7 +58,6 @@ alert = False
 
 
 def send_prices(bot, update):
-    percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
     # percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
     message = "Цены BTC/USD:\nBitfinex {1} USD,\nExmo    {0} USD,\nразница цен: {2} USD ({3}%)".format(
         round(data.secondary.price, 2),
