@@ -58,21 +58,13 @@ alert = False
 
 
 def send_prices(bot, update):
-<<<<<<< HEAD
     # percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
-    message = "Цены BTC/USD: Exmo {0}, Bitfinex {1}, разница цен: {2} USD ({3}%)".format(
-        data.secondary.price,
-        data.primary.price,
+    message = "Цены BTC/USD:\nBitfinex {1} USD,\nExmo    {0} USD,\nразница цен: {2} USD ({3}%)".format(
+        round(data.secondary.price, 2),
+        round(data.primary.price, 2),
         round(data.diff_ma_fast, 2),
         data.percent)
-=======
-    percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
-    message = "Цены BTC/USD:\nBitfinex {1} USD,\nExmo    {0} USD,\nразница цен: {2} USD ({3}%)".format(
-        price_exmo,
-        price_bitfin,
-        round(price_diff_ma_fast, 2),
-        percent)
->>>>>>> master
+
     logger.info(
         "Price request: chat id {0}, from {1} ({2}). Sending text: {3}".format(str(
             update.message.chat_id), update.message.from_user.username,
@@ -152,30 +144,30 @@ def add_command_handlers(disp):
 
 
 # def get_exchange_data():
-    # global price_diff_prev, price_diff_ma_slow, price_diff_ma_fast, price_avg_ma_fast, alert, price_exmo, price_bitfin
+# global price_diff_prev, price_diff_ma_slow, price_diff_ma_fast, price_avg_ma_fast, alert, price_exmo, price_bitfin
 
-    # price_diff_prev = price_diff_ma_fast
-    # price_exmo = exchange.get_exmo_btc_price()
-    # price_bitfin = exchange.get_bitfinex_btc_price()
-    # price_diff = round(price_bitfin - price_exmo, 2)
-    # price_diff = get_price_diff_mock()
-    # price_avg = round((price_exmo + price_bitfin) / 2, 2)
+# price_diff_prev = price_diff_ma_fast
+# price_exmo = exchange.get_exmo_btc_price()
+# price_bitfin = exchange.get_bitfinex_btc_price()
+# price_diff = round(price_bitfin - price_exmo, 2)
+# price_diff = get_price_diff_mock()
+# price_avg = round((price_exmo + price_bitfin) / 2, 2)
 
-    # price_diff_ma_slow = exchange.update_ma(price_diff, price_diff_ma_slow, price_ma_period_slow)
-    # price_diff_ma_fast = exchange.update_ma(price_diff, price_diff_ma_fast, price_ma_period_fast)
-    # price_avg_ma_fast = exchange.update_ma(price_avg, price_avg_ma_fast, price_ma_period_fast)
+# price_diff_ma_slow = exchange.update_ma(price_diff, price_diff_ma_slow, price_ma_period_slow)
+# price_diff_ma_fast = exchange.update_ma(price_diff, price_diff_ma_fast, price_ma_period_fast)
+# price_avg_ma_fast = exchange.update_ma(price_avg, price_avg_ma_fast, price_ma_period_fast)
 
-    # logger.debug(
-    #     "Bitfinex - Exmo price difference is {0} USD, before it was {1} USD. Slow MA: {2}, Fast MA: {3}".format(
-    #         price_diff,
-    #         price_diff_prev,
-    #         round(price_diff_ma_slow, 2),
-    #         round(price_diff_ma_fast, 2)))
+# logger.debug(
+#     "Bitfinex - Exmo price difference is {0} USD, before it was {1} USD. Slow MA: {2}, Fast MA: {3}".format(
+#         price_diff,
+#         price_diff_prev,
+#         round(price_diff_ma_slow, 2),
+#         round(price_diff_ma_fast, 2)))
 
-    # if price_diff_prev == 0.0:
-    #     price_diff_prev = price_diff_ma_fast
-    # logger.info("price diff: " + str(price_diff))
-    # return price_diff
+# if price_diff_prev == 0.0:
+#     price_diff_prev = price_diff_ma_fast
+# logger.info("price diff: " + str(price_diff))
+# return price_diff
 
 
 def callback_orderbook_updates(bot, job):
