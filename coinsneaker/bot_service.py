@@ -298,7 +298,7 @@ def main():
         logger.info(str(chats))
     dispatcher = updater.dispatcher
     logger.info("Starting Bitfinex websocket client")
-    # btf.start()
+    btf.start()
 
     def stop_and_restart():
         """Gracefully stop the Updater and replace the current process with a new one"""
@@ -346,7 +346,7 @@ def main():
     logger.info("init regular job to gather exchange data every minute")
     job_minute = job_queue.run_repeating(callback_exchanges_data, interval=60, first=0)
     logger.info("init regular job to get Bitfinex orderbook every second")
-    # job_orderbook_second = job_queue.run_repeating(callback_orderbook_updates, interval=1, first=0)
+    job_orderbook_second = job_queue.run_repeating(callback_orderbook_updates, interval=1, first=0)
     logger.info("The bot has started.")
     updater.start_polling()
     master_file = "/tmp/master.txt"
