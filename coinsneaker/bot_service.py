@@ -177,7 +177,7 @@ def callback_exchanges_data(bot, job):
             alert = False
 
     # write values to exchange history file
-    header = data.header
+    header = list(data.header)
     header.extend(
         ["{} spread".format(data.secondary.ex.name),
          "{} spread".format(data.primary.ex.name),
@@ -198,6 +198,12 @@ def callback_exchanges_data(bot, job):
     )
     csv = ','.join(csv_list)
     write_exchange_data_to_file(header_text + "\n", csv + "\n")
+    logger.debug("Bitfinex websocket connected: " + str(btf.wss.conn.connected.is_set()))
+    logger.debug("Bitfinex websocket is alive: " + str(btf.wss.conn.is_alive()))
+    if not (btf.wss.conn.connected.is_set() and btf.wss.conn.is_alive()):
+        logger.warning("Bitfinex websocket is not connected! Trying to reconnect")
+        btf.wss.reset()
+
 
 
 def send_text_to_subscribers(bot, text):
