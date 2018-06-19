@@ -11,7 +11,7 @@ from shutil import make_archive
 from threading import Thread
 
 import emoji
-from telegram import MessageEntity
+from telegram import MessageEntity, ParseMode
 from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
@@ -49,39 +49,46 @@ orderbook_alert = False
 
 
 def send_prices(bot, update):
-    # percent = round(price_diff_ma_fast / price_avg_ma_fast * 100, 3)
-    message = "Цены BTC/USD:\nBitfinex {1} USD,\nExmo    {0} USD,\nразница цен: {2} USD ({3}%)".format(
-        round(data.secondary.price, 2),
-        round(data.primary.price, 2),
-        round(data.diff_ma_fast, 2),
+    message = ("Цены <b>BTC/USD</b>:\n" +
+               "<i>Bitfinex</i> {1:>8.2f} USD,\n" +
+               "<i>Exmo</i> {0:>12.2f} USD,\n" +
+               "<i>разница:</i>  <b>{2:>7.2f}</b> USD (<b>{3:.3f}%</b>)").format(
+        data.secondary.price,
+        data.primary.price,
+        data.diff_ma_fast,
         data.percent)
-    logger.info(
-        "Price request: chat id {0}, from {1} ({2}). Sending text: {3}".format(str(
-            update.message.chat_id), update.message.from_user.username,
-            update.message.from_user.id, message))
-    bot.send_message(chat_id=update.message.chat_id, text=message)
+    events.event_info("Price request", update, message)
+    bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=ParseMode.HTML)
 
 
 def send_orderbook(bot, update):
+    events.debug_info(bot, update)
     bid_total = btf.bid_depth
     bids = sorted(btf.bids.keys())
-    # bids_price_range = abs(round(bids[0] - bids[-1]))
+    bids_price_range = abs(round(float(bids[0]) - float(bids[-1])))
     ask_total = btf.ask_depth
     asks = sorted(btf.asks.keys())
-    # asks_price_range = abs(round(asks[0] - asks[-1]))
-    message = "BTC/USD стаканы Bitfinex:\nПокупка {0} BTC (диапазон {1}..{2} USD)\nПродажа {3} BTC (диапазон {4}..{5} USD)".format(
-        round(bid_total, 2),
-        bids[-1],
-        bids[0],
-        round(ask_total, 2),
-        asks[0],
-        asks[-1]
+    asks_price_range = abs(round(float(asks[0]) - float(asks[-1])))
+    depth_total = bid_total + ask_total
+    message = ("<b>BTC/USD</b> стаканы <i>Bitfinex</i>:\n" +
+               "<pre>     Покупка | Продажа \n" +
+               "{8:>10.0f} % | {9:<3.0f}%\n" +
+               "{0:>12.2f} | {3:<12.2f}\n" +
+               "({1:4.0f}..{2:4.0f}) | ({4:4.0f}..{5:4.0f})\n" +
+               "  |-{6:4.0f}-|       |-{7:4.0f}-|</pre>").format(
+        bid_total,
+        float(bids[0]),
+        float(bids[-1]),
+        ask_total,
+        float(asks[0]),
+        float(asks[-1]),
+        bids_price_range,
+        asks_price_range,
+        bid_total / depth_total * 100,
+        ask_total / depth_total * 100
     )
-    logger.info(
-        "Orderbook request: chat id {0}, from {1} ({2}). Sending text: {3}".format(str(
-            update.message.chat_id), update.message.from_user.username,
-            update.message.from_user.id, message))
-    bot.send_message(chat_id=update.message.chat_id, text=message)
+    events.event_info("Orderbook request", update, message)
+    bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=ParseMode.HTML)
 
 
 def add_message_handlers(disp):
@@ -145,7 +152,6 @@ def callback_exchanges_data(bot, job):
         price_diff_prev = data.history[-2][4]
     else:
         price_diff_prev = data.history[-1][4]
-    # price_diff = get_exchange_data()
 
     percent = data.percent
     logger.debug(
@@ -281,7 +287,6 @@ def main():
         logger.info('List of subscribers:')
         logger.info(str(chats))
     dispatcher = updater.dispatcher
-    logger.info("Starting Bitfinex websocket client")
     btf.start()
 
     def stop_and_restart():

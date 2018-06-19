@@ -33,20 +33,20 @@ def send_graph(bot, update, args):
         reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
             period)
         period = 2
-    logger.info(
-        "Request to plot graph for {0} hours from chat id {1}, user {2}".format(period, update.message.chat_id,
-                                                                                update.message.from_user.username))
-    logger.info("target file: " + target_file)
+    logger.debug("target file: " + target_file)
     if reply:
         update.message.reply_text(reply)
     graph.generate_graph(target_file, period)
+    event_info("Graph request for {0} hours".format(period), update, "target file: " + target_file)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
 
 def start(bot, update):
     debug_info(bot, update)
-    bot.send_message(chat_id=update.message.chat_id, text="I'm a bot, please talk to me!")
+    text = "I'm a bot, please talk to me!"
+    event_info("START command", update, text)
+    bot.send_message(chat_id=update.message.chat_id, text=text)
 
 
 def subscribe(bot, update):
@@ -80,36 +80,44 @@ def echo(bot, update):
     if update.message.text.startswith("ты"):
         prefix = "сам "
     debug_info(bot, update)
+    event_info("Echo text", update, prefix + update.message.text)
     bot.send_message(chat_id=update.message.chat_id, text=prefix + update.message.text)
 
 
 def el(bot, update):
     debug_info(bot, update)
+    event_info("Elya was mentioned!", update, "")
     bot.send_message(chat_id=update.message.chat_id,
                      text="Эля - милейшая девушка из всех, с которыми мы когда-либо общались, хоть иногда и врединка)")
 
 
 def unknown(bot, update):
     debug_info(bot, update)
-    bot.send_message(chat_id=update.message.chat_id, text="Sorry, I didn't understand that command.")
+    reply = "Sorry, I didn't understand that command."
+    event_info("Unknown command", update, reply)
+    bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
 def caps(bot, update, args):
     text_caps = ' '.join(args).upper()
     debug_info(bot, update)
+    event_info("/caps command", update, text_caps)
     bot.send_message(chat_id=update.message.chat_id, text=text_caps)
 
 
 def welcome(bot, update):
     debug_info(bot, update)
-    bot.send_message(chat_id=update.message.chat_id, text="Добро пожаловать в наш чатик!")
+    message = "Добро пожаловать в наш чатик!"
+    bot.send_message(chat_id=update.message.chat_id, text=message)
 
 
 # It turned out that mentions are only possible in group chats. You cannot mention someone in private chat
 def mention(bot, update):
     debug_info(bot, update)
     if i_was_mentioned(bot, update):
-        update.message.reply_text("Кто меня звал?")
+        reply = "Кто меня звал?"
+        event_info("Mention", update, reply)
+        update.message.reply_text(reply)
 
 
 def i_was_mentioned(bot, update):
@@ -151,7 +159,7 @@ def joke(bot, update):
         reply = re.sub(r'<[^<]+?>', '', str(reply))
         reply = re.sub(r'Проголосовать:', '', str(reply))
         logger.debug("joke text: from {0}: {1}".format(url, reply))
-        logger.info("Joke sent to user " + str(update.message.from_user.username))
+    event_info("Joke request", update, site + ": " + reply)
     bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
@@ -162,7 +170,7 @@ def history(bot, update, args):
         s = "List of exchange history files (newest first):\n"
         for index, item in enumerate(filenames):
             s += "{0}: {1}\n".format(index, item)
-        logger.info("Request to show list of exchange data files from: " + update.message.from_user.username)
+        event_info("Show list of exchange data files", update, s)
         update.message.reply_text(s)
     else:
         if args:
@@ -176,8 +184,7 @@ def history(bot, update, args):
                 update.message.reply_text(
                     "Invalid index. Please specify from range: {0}..{1}".format(0, len(filenames) - 1))
                 return
-        logger.info(
-            "Sending exchange data file {0} to user {1} ".format(filenames[number], update.message.from_user.username))
+        event_info("Sending exchange data file '{0}'".format(filenames[number]), update, "")
         bot.send_document(chat_id=update.message.chat_id, document=open(filenames[number], 'rb'))
 
 
@@ -187,3 +194,10 @@ def debug_info(bot, update):
     logger.debug(' > message text: ' + str(update.message.text))
     logger.debug(
         ' > chat member info: ' + str(bot.get_chat_member(update.message.chat_id, update.message.from_user.id)))
+
+
+def event_info(prefix, update, message):
+    logger.info(
+        prefix + ": chat id {0}, user {1} ({2}). Sending text:".format(str(
+            update.message.chat_id), update.message.from_user.username,
+            update.message.from_user.id) + message)

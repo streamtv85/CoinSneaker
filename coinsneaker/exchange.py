@@ -156,12 +156,14 @@ class BitfinexBookWatcher:
         self.wss = BtfxWss()
 
     def start(self):
+        logger.info("Starting Bitfinex websocket client")
         self.wss.start()
         while not self.wss.conn.connected.is_set():
             time.sleep(1)
         # for P1 precision usual width of order book is ~100 USD (for BTC/USD price ~6500)
         # for wider range (about 1500 USD) use P2 precision. But the price will be rounded to tens
         self.wss.subscribe_to_order_book('BTCUSD', prec="P1", len=100)
+        logger.info("Subscribed to Order Book WSS channel")
         # waiting for a bit to receive the book snapshot
         time.sleep(2)
 
