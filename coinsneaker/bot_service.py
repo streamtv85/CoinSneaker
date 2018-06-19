@@ -202,8 +202,8 @@ def callback_exchanges_data(bot, job):
     logger.debug("Bitfinex websocket is alive: " + str(btf.wss.conn.is_alive()))
     if not (btf.wss.conn.connected.is_set() and btf.wss.conn.is_alive()):
         logger.warning("Bitfinex websocket is not connected! Trying to reconnect")
-        btf.wss.reset()
-
+        btf.stop()
+        btf.start()
 
 
 def send_text_to_subscribers(bot, text):
