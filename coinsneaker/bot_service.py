@@ -50,13 +50,16 @@ orderbook_alert = False
 
 def send_prices(bot, update):
     message = ("Цены <b>BTC/USD</b>:\n" +
-               "<i>Bitfinex</i> {1:>8.2f} USD,\n" +
-               "<i>Exmo</i> {0:>12.2f} USD,\n" +
+               "<i>Bitfinex</i> <b>{1:>8.2f}</b> USD, <i>спред:</i> <b>{4:.2f}</b>\n" +
+               "<i>Exmo</i> <b>{0:>12.2f}</b> USD, <i>спред:</i> <b>{5:.2f}</b>\n" +
                "<i>разница:</i>  <b>{2:>7.2f}</b> USD (<b>{3:.3f}%</b>)").format(
         data.secondary.price,
         data.primary.price,
         data.diff_ma_fast,
-        data.percent)
+        data.percent,
+        data.primary.spread,
+        data.secondary.spread
+    )
     events.event_info("Price request", update, message)
     bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=ParseMode.HTML)
 
