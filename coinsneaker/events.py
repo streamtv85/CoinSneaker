@@ -2,18 +2,14 @@ import html
 import os
 import random
 import re
-import xml
 from time import sleep
 import emoji
 import requests
-
 import telegram
-import urllib3
 from urllib.parse import urlencode
+import logging
 
 from coinsneaker import dbmanager, graph
-
-import logging
 
 logger = logging.getLogger('bot-service.events')
 

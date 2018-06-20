@@ -6,11 +6,10 @@ import math
 import os
 import sys
 import time
+import emoji
 from logging.handlers import TimedRotatingFileHandler
 from shutil import make_archive
 from threading import Thread
-
-import emoji
 from telegram import MessageEntity, ParseMode
 from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
@@ -216,7 +215,7 @@ def callback_exchanges_data(bot, job):
     logger.debug("Bitfinex websocket is alive: " + str(btf.wss.conn.is_alive()))
     if not (btf.wss.conn.connected.is_set() and btf.wss.conn.is_alive()):
         logger.warning("Bitfinex websocket is not connected! Trying to reconnect")
-        btf.stop()
+        btf.wss.reset()
         btf.start()
 
 

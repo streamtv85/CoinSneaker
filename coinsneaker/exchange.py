@@ -2,10 +2,8 @@ import math
 import random
 import time
 import ccxt
-
 import requests
 import logging
-
 from btfxwss import BtfxWss
 
 logger = logging.getLogger('bot-service.exchange')
@@ -156,8 +154,9 @@ class BitfinexBookWatcher:
         self.wss = BtfxWss()
 
     def start(self):
-        logger.info("Starting Bitfinex websocket client")
-        self.wss.start()
+        if not self.wss.conn.connected.is_set():
+            logger.info("Starting Bitfinex websocket client")
+            self.wss.start()
         while not self.wss.conn.connected.is_set():
             time.sleep(1)
         # for P1 precision usual width of order book is ~100 USD (for BTC/USD price ~6500)
