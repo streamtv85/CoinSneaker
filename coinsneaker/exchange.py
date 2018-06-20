@@ -195,11 +195,13 @@ class BitfinexBookWatcher:
 
     # better call stop() at the end of the program (and on TERM signal)
     def stop(self):
-        logger.debug("unsubscribe")
-        self.wss.unsubscribe_from_order_book('BTCUSD')
-        logger.debug("stopping the socket")
-        self.wss.stop()
-        logger.debug("stopped.")
+        if self.wss.conn.connected.is_set() and self.wss.channel_configs:
+            logger.debug("unsubscribe")
+            self.wss.unsubscribe_from_order_book('BTCUSD')
+        if self.wss.conn.connected.is_set():
+            logger.debug("stopping the socket")
+            self.wss.stop()
+            logger.debug("stopped.")
 
     def fill_the_book(self, input_list):
         for row in input_list:

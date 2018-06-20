@@ -22,21 +22,26 @@ from coinsneaker.configmanager import config
 cwd = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger('bot-service')
 log_level = config.get('logLevel')
-logger.setLevel(logging.getLevelName(log_level))
+logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 logfilename = os.path.join(cwd, 'bot-service.log')
+logdebugfilename = os.path.join(cwd, 'bot-service-debug.log')
 fh = TimedRotatingFileHandler(logfilename, when='D', interval=1, backupCount=int(config.get('logMaxAge')),
                               encoding='utf_8')
 fh.setLevel(logging.getLevelName(log_level))
+fhdebug = TimedRotatingFileHandler(logdebugfilename, when='D', interval=1, backupCount=3, encoding='utf_8')
+fhdebug.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler()
 ch.setLevel(logging.getLevelName(log_level))
 # create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
+fhdebug.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh)
+logger.addHandler(fhdebug)
 logger.addHandler(ch)
 
 exmo_watcher = ExchangeWatcher('exmo', 'BTC/USD')
