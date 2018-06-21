@@ -180,7 +180,7 @@ def history(bot, update, args):
                 update.message.reply_text(
                     "Invalid index. Please specify from range: {0}..{1}".format(0, len(filenames) - 1))
                 return
-        event_info("Sending exchange data file '{0}'".format(filenames[number]), update, "")
+        event_info("Sending exchange data file {0!r}".format(filenames[number]), update, "")
         bot.send_document(chat_id=update.message.chat_id, document=open(filenames[number], 'rb'))
 
 
@@ -194,6 +194,7 @@ def debug_info(bot, update):
 
 def event_info(prefix, update, message):
     logger.info(
-        prefix + ": chat id {0}, user {1} ({2}). Sending text:".format(str(
-            update.message.chat_id), update.message.from_user.username,
+        prefix + ": chat id {0!s}, user {1} ({2}). Sending text:".format(
+            update.message.chat_id, update.message.from_user.username if update.message.from_user.username else (
+                    update.message.from_user.first_name + update.message.from_user.last_name),
             update.message.from_user.id) + message)
