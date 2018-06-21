@@ -155,7 +155,7 @@ def joke(bot, update):
         reply = re.sub(r'<[^<]+?>', '', str(reply))
         reply = re.sub(r'Проголосовать:', '', str(reply))
         logger.debug("joke text: from {0}: {1}".format(url, reply))
-    event_info("Joke request", update, site + ": " + reply)
+    event_info("Joke request", update, site + ":\n" + reply)
     bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
@@ -194,7 +194,7 @@ def debug_info(bot, update):
 
 def event_info(prefix, update, message):
     logger.info(
-        prefix + ": chat id {0!s}, user {1} ({2}). Sending text:".format(
+        prefix + ": chat id {0!s}, user {1} ({2}). ".format(
             update.message.chat_id, update.message.from_user.username if update.message.from_user.username else (
                     update.message.from_user.first_name + update.message.from_user.last_name),
-            update.message.from_user.id) + message)
+            update.message.from_user.id) + "Response:\n" if message else "" + message)
