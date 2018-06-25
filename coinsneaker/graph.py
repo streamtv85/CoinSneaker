@@ -10,6 +10,7 @@ import numpy
 import matplotlib.pyplot as plt
 import matplotlib.dates
 from coinsneaker.configmanager import config
+from coinsneaker.exchange import update_ma
 
 logger = logging.getLogger('bot-service.graph')
 
@@ -73,11 +74,27 @@ def generate_graph(target_file, period, debug=False):
     bitfin_prices = my_data['f2'][-max_size:]
     if debug:
         alerts = my_data['f7'][-max_size:]
-        ticks = list(bitfin_prices)
+        percents = my_data['f6'][-max_size:]
+        ticks = list(percents)
+        exmo_prices_ma = list(exmo_prices)
+        bitfin_prices_ma = list(bitfin_prices)
+        percents_ma = list(percents)
+        percents2 = list(percents)
+        percents2_ma = list(percents)
+        percents_ma2 = list(percents)
         for i, item in enumerate(fmt_dates):
             # print(str(i) + " " + str(item))
-            if not alerts[i]:
-                ticks[i] = None
+            if i > 0:
+                if alerts[i] and not alerts[i - 1]:
+                    pass
+                else:
+                    ticks[i] = None
+                exmo_prices_ma[i] = update_ma(exmo_prices[i], exmo_prices_ma[i - 1], 10)
+                bitfin_prices_ma[i] = update_ma(bitfin_prices[i], bitfin_prices_ma[i - 1], 10)
+                percents2[i] = round((bitfin_prices_ma[i] - exmo_prices_ma[i]) / (bitfin_prices_ma[i] + exmo_prices_ma[i]) * 100, 2)
+                percents2_ma[i] = update_ma(percents2[i], percents2_ma[i - 1], 3)
+                percents_ma[i] = update_ma(percents[i], percents_ma[i - 1], 3)
+                percents_ma2[i] = update_ma(percents[i], percents_ma2[i - 1], 20)
 
     logger.debug("exmo size: " + str(len(exmo_prices)))
     logger.debug("bitfin size: " + str(len(bitfin_prices)))
@@ -86,17 +103,27 @@ def generate_graph(target_file, period, debug=False):
     fig = plt.figure(figsize=(9.6, 7.2), tight_layout=True)
     # default size is 6.4 * 4.8 inches
     # print(fig.get_size_inches())
-    ax = fig.add_subplot(111)
-    ax.plot_date(fmt_dates, exmo_prices, fmt='b', label='Exmo')
-    ax.plot_date(fmt_dates, bitfin_prices, fmt='g', label='Bitfinex')
+    ax = fig.add_subplot(212)
+    ax.plot_date(fmt_dates, exmo_prices, fmt='c:', label='Exmo')
+    ax.plot_date(fmt_dates, bitfin_prices, fmt='g:', label='Bitfinex')
     if debug:
-        ax.plot_date(fmt_dates, ticks, fmt='r.')
+        ax.plot_date(fmt_dates, exmo_prices_ma, fmt='b')
+        ax.plot_date(fmt_dates, bitfin_prices_ma, fmt='g')
     ax.set_ylabel('BTC/USD')
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter('%d-%m %H:%M'))
-    # ax2 = fig.add_subplot(2)
-    # ax2.plot_date(fmt_dates, exmo_prices)
-    plt.legend()
-    plt.grid()
+    ax2 = fig.add_subplot(211)
+    ax2.plot_date(fmt_dates, percents, fmt='k')
+    # ax2.plot_date(fmt_dates, percents_ma, fmt='k')
+    # ax2.plot_date(fmt_dates, percents_ma2, fmt='m')
+    ax2.plot_date(fmt_dates, percents2, fmt='m')
+    ax2.plot_date(fmt_dates, ticks, fmt='r.')
+    ax2.set_ylabel('percent')
+    ax.legend()
+    ax.grid()
+    ax2.grid()
+    # plt.subplots_adjust(bottom=0.1, right=0.8, top=0.9)
+    # plt.legend()
+    # plt.grid()
     fig.align_labels()
     fig.autofmt_xdate()
     plt.savefig(target_file)
@@ -104,5 +131,5 @@ def generate_graph(target_file, period, debug=False):
 
 
 if __name__ == "__main__":
-    generate_graph('1234322.png', 3)
+    generate_graph('1234322.png', 6, debug=True)
     # get_data_from_file(120)
