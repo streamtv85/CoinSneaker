@@ -15,7 +15,7 @@ from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
 
-from coinsneaker import events, dbmanager, exchange, ExchangeWatcher, BitfinexBookWatcher, DataHistoryManager
+from coinsneaker import events, dbmanager, exchange, graph, ExchangeWatcher, BitfinexBookWatcher, DataHistoryManager
 from coinsneaker.configmanager import config
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -98,6 +98,14 @@ def send_orderbook(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=message, parse_mode=ParseMode.HTML)
 
 
+def send_orderbook_graph(bot, update):
+    target_file = '{0}_ob.png'.format(update.message.chat_id)
+    graph.generate_book_graph(target_file, btf)
+    events.event_info("Orderbook graph request", update, "target file: " + target_file)
+    bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
+    os.remove(target_file)
+
+
 def add_message_handlers(disp):
     logger.info("Adding message handlers.")
     welcome_handler = MessageHandler(Filters.status_update.new_chat_members, events.welcome)
@@ -141,6 +149,9 @@ def add_command_handlers(disp):
 
     ob_handler = CommandHandler('orderbook', send_orderbook)
     disp.add_handler(ob_handler)
+
+    ob_graph_handler = CommandHandler('book', send_orderbook_graph)
+    disp.add_handler(ob_graph_handler)
 
     # should be added as the LAST handler
     unknown_handler = MessageHandler(Filters.command, events.unknown)

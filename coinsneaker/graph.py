@@ -5,6 +5,8 @@ import time
 import logging
 import matplotlib
 
+from coinsneaker.exchange import BitfinexBookWatcher
+
 matplotlib.use('Agg')
 import numpy
 import matplotlib.pyplot as plt
@@ -103,6 +105,51 @@ def generate_graph(target_file, period, debug=False):
     return True
 
 
+def generate_book_graph(target_file, data: BitfinexBookWatcher):
+    data_bids = sorted(data.bids.keys())
+    bid_prices = [float(item) for item in data_bids]
+    bids = [data.bids[price] for price in data_bids]
+    max_bid = max(bids)
+    data_asks = sorted(data.asks.keys())
+    ask_prices = [float(item) for item in data_asks]
+    asks = [data.asks[price] for price in data_asks]
+    max_ask = max(asks)
+
+    fig = plt.figure(figsize=(7.2, 9.6), tight_layout=True)
+    ax_bid = fig.add_subplot(121)
+    ax_bid.barh(bid_prices, bids, color='g')
+    ax_ask = fig.add_subplot(122)
+    ax_ask.barh(ask_prices, asks, color='r')
+
+    ax_bid.set_title('Bids', color='g')
+    ax_ask.set_title('Asks', color='r')
+    ax_bid.set_xlim(max(max_bid, max_ask), 0)
+    ax_bid.set_ylim(bid_prices[0], bid_prices[-1])
+    ax_ask.set_xlim(0, max(max_bid, max_ask))
+    ax_ask.set_ylim(ask_prices[-1], ask_prices[0])
+
+    bid_ticks = bid_prices[0::10]
+    bid_ticks.append(bid_prices[-1])
+    ask_ticks = ask_prices[0::10]
+    ask_ticks.append(ask_prices[-1])
+    ax_bid.set_yticks(bid_ticks)
+    ax_bid.tick_params(labelcolor='g')
+    ax_ask.set_yticks(ask_ticks)
+    ax_ask.tick_params(labelcolor='r')
+    ax_ask.yaxis.set_ticks_position('right')
+
+    ax_bid.grid()
+    ax_ask.grid()
+    plt.savefig(target_file)
+
+
 if __name__ == "__main__":
-    generate_graph('1234322.png', 3)
+    data = BitfinexBookWatcher()
+    data.start()
+    time.sleep(2)
+    data.get_updates()
+    time.sleep(1)
+    data.stop()
+    generate_book_graph("65464564.png", data)
+    # generate_graph('1234322.png', 3)
     # get_data_from_file(120)
