@@ -37,6 +37,7 @@ def send_graph(bot, update, args):
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
+
 def send_advanced_graph(bot, update, args):
     debug_info(bot, update)
     reply = ""
@@ -216,8 +217,12 @@ def debug_info(bot, update):
 
 
 def event_info(prefix, update, message):
+    if message:
+        suffix = "Response:\n"
+    else:
+        suffix = ""
     logger.info(
         prefix + ": chat id {0!s}, user {1} ({2}). ".format(
             update.message.chat_id, update.message.from_user.username if update.message.from_user.username else (
                     update.message.from_user.first_name + update.message.from_user.last_name),
-            update.message.from_user.id) + "Response:\n" if message else "" + message)
+            update.message.from_user.id) + suffix + message)
