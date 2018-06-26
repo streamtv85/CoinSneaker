@@ -96,13 +96,18 @@ def generate_graph(target_file, period, debug=False):
         exmo_prices_ma[i] = update_ma(exmo_prices[i], exmo_prices_ma[i - 1], 10)
         bitfin_prices_ma[i] = update_ma(bitfin_prices[i], bitfin_prices_ma[i - 1], 10)
         if debug:
-            if i > 0:
-                if alerts[i] and not alerts[i - 1]:
-                    pass
-                else:
-                    ticks[i] = None
-                percents_ma[i] = update_ma(percents[i], percents_ma[i - 1], 3)
-                percents_ma2[i] = update_ma(percents[i], percents_ma2[i - 1], 20)
+            # if i > 0:
+            if alerts[i] and not alerts[i - 1]:
+                pass
+            else:
+                ticks[i] = None
+            percents_ma[i] = update_ma(percents[i], percents_ma[i - 1], 3)
+            percents_ma2[i] = update_ma(percents[i], percents_ma2[i - 1], 20)
+            exmo_spread[i] = exmo_spread[i] / 2
+            if bitfin_bids[i] == 0:
+                bitfin_bids[i] = bitfin_bids[i-1]
+            if bitfin_asks[i] == 0:
+                            bitfin_asks[i] = bitfin_asks[i-1]
 
     logger.debug("exmo size: " + str(len(exmo_prices)))
     logger.debug("bitfin size: " + str(len(bitfin_prices)))
