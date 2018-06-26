@@ -37,6 +37,29 @@ def send_graph(bot, update, args):
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
+def send_advanced_graph(bot, update, args):
+    debug_info(bot, update)
+    reply = ""
+    target_file = '{0}_dbg.png'.format(update.message.chat_id)
+    period = 2
+    if args:
+        try:
+            period = int(args[0])
+        except ValueError:
+            logger.warning("invalid argument was given. Using default period: {0}".format(period))
+            reply = "Я, конечно, силен, но график на такое количество часов построить не в силах... Два часа - мой ответ"
+    if not (0 < period < 12):
+        reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
+            period)
+        period = 2
+    logger.debug("target file: " + target_file)
+    if reply:
+        update.message.reply_text(reply)
+    graph.generate_graph(target_file, period, debug=True)
+    event_info("Advanced graph request for {0} hours".format(period), update, "target file: " + target_file)
+    bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
+    os.remove(target_file)
+
 
 def start(bot, update):
     debug_info(bot, update)

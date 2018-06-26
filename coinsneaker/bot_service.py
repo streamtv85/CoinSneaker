@@ -141,6 +141,9 @@ def add_command_handlers(disp):
     graph_handler = CommandHandler('graph', events.send_graph, pass_args=True)
     disp.add_handler(graph_handler)
 
+    adv_graph_handler = CommandHandler('advgraph', events.send_advanced_graph, pass_args=True)
+    disp.add_handler(adv_graph_handler)
+
     history_handler = CommandHandler('history', events.history, pass_args=True)
     disp.add_handler(history_handler)
 
