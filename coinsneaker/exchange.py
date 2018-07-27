@@ -1,6 +1,8 @@
+import datetime
 import math
 import random
 import time
+import arrow
 import ccxt
 import requests
 import logging
@@ -22,18 +24,19 @@ def get_price_diff_mock():
     # return round(amp * math.sin(2 * math.pi * timestamp * period) + random.gauss(0, amp / 10), 2)
 
 
-def get_price_avg():
-    return round((get_bitfinex_btc_price() + get_exmo_btc_price()) / 2, 2)
-
-
-def get_exmo_btc_price():
-    data = get_data_from_api("https://api.exmo.com", "/v1/ticker/")
-    return round(float(data['BTC_USD']['last_trade']), 2)
-
-
-def get_bitfinex_btc_price():
-    data = get_data_from_api("https://api.bitfinex.com", "/v2/ticker/tBTCUSD")
-    return round(float(data[6]), 2)
+#
+# def get_price_avg():
+#     return round((get_bitfinex_btc_price() + get_exmo_btc_price()) / 2, 2)
+#
+#
+# def get_exmo_btc_price():
+#     data = get_data_from_api("https://api.exmo.com", "/v1/ticker/")
+#     return round(float(data['BTC_USD']['last_trade']), 2)
+#
+#
+# def get_bitfinex_btc_price():
+#     data = get_data_from_api("https://api.bitfinex.com", "/v2/ticker/tBTCUSD")
+#     return round(float(data[6]), 2)
 
 
 def get_data_from_api(base_url, path):
@@ -43,6 +46,40 @@ def get_data_from_api(base_url, path):
     logger.debug("response from " + base_url + path)
     # logger.debug(response.json())
     return response.json()
+
+
+def get_tx_list():
+    '''
+    https://gtrade.club/api/transfer
+    list of transactions since the timestamp given
+    https://gtrade.club/api/transfer/1531032560
+    Top-10000 BTC addresses
+    https://gtrade.club/api/rich
+    info on the address
+    https://gtrade.club/api/address/1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s
+
+    :return:
+    '''
+    base = "https://gtrade.club/api/"
+    satoshis = 10 ** 8
+    result = get_data_from_api(base, "rich")
+    # print(result)
+    now = arrow.now().timestamp
+    result_now = get_data_from_api(base, "transfer/" + str(now))
+    before = arrow.now().shift(hours=-6).timestamp
+    result_before = get_data_from_api(base, "transfer/" + str(before))
+    print(result_before)
+    if result_before['new']:
+        for item in result_before['data']:
+            btc_before = item['last_balance'] / satoshis
+            btc_now = item['balance'] / satoshis
+            diff = btc_now - btc_before
+            if abs(diff) >= 150:
+                print("address: {0} #{1}, was: {2:.0f}, now: {3:.0f}, diff: {4}, upd: {5}".format(item['address'],
+                                                                                                  item['position'],
+                                                                                                  btc_before, btc_now,
+                                                                                                  diff,
+                                                                                                  item['updated_at']))
 
 
 def update_ma(new_value, old_value, period):
@@ -225,23 +262,45 @@ class BitfinexBookWatcher:
 
 
 if __name__ == "__main__":
+    get_tx_list()
 
-    # exmo_watcher = ExchangeWatcher('exmo', 'BTC/USDT')
-    # bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USDT')
-    # data = DataHistoryManager(bitfin_watcher, exmo_watcher)
-    # data.update()
-    # data.update()
-    # print("BTC price on Exmo: " + str(exmo_watcher.price) + " USD")
-    # print("BTC price on Bitfinex: " + str(bitfin_watcher.price) + " USD")
-    # print(data.history)
+# exmo_watcher = ExchangeWatcher('exmo', 'BTC/USDT')
+# bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USDT')
 
-    # bids = dict()
-    # asks = dict()
 
-    btf = BitfinexBookWatcher()
-    btf.start()
-    for i in range(1, 50):
-        btf.get_updates()
-        time.sleep(1)
+# b_watcher = getattr(ccxt, 'binance')({'enableRateLimit': True, 'verbose': False})
+# response = requests.get('https://api.binance.com/api/v1/time')
+# print("server time: ")
+# print(datetime.datetime.fromtimestamp(response.json()['serverTime']/1000).strftime('%Y-%m-%d %H:%M:%S.%f'))
+# print("")
+# candles = b_watcher.fetch_ohlcv(symbol='ETC/USDT', timeframe='1h', since=None)
+# for candle in candles[-10:]:
+#     # print(candle[0])
+#     pass
+#     print(datetime.datetime.fromtimestamp(candle[0]/1000).strftime('%Y-%m-%d %H:%M:%S.%f') + str(candle[1:]))
+#
+# exx = getattr(ccxt, 'exmo')({'enableRateLimit': True, 'verbose': False})
+# ex_candles = exx.fetch_ohlcv(symbol='ETH/BTC', timeframe='1h', since=None)
+# for candle in ex_candles[-10:]:
+#     # print(candle[0])
+#     pass
+#     print(candle)
 
-    btf.stop()
+
+# data = DataHistoryManager(bitfin_watcher, exmo_watcher)
+# data.update()
+# data.update()
+# print("BTC price on Exmo: " + str(exmo_watcher.price) + " USD")
+# print("BTC price on Bitfinex: " + str(bitfin_watcher.price) + " USD")
+# print(data.history)
+
+# bids = dict()
+# asks = dict()
+
+# btf = BitfinexBookWatcher()
+# btf.start()
+# for i in range(1, 50):
+#     btf.get_updates()
+#     time.sleep(1)
+#
+# btf.stop()
