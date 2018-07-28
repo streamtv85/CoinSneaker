@@ -3,6 +3,8 @@ import os
 import random
 import re
 from time import sleep
+
+import arrow as arrow
 import emoji
 import requests
 import telegram
@@ -104,12 +106,26 @@ def echo(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=prefix + update.message.text)
 
 
+def el_bday(bot, update):
+    debug_info(bot, update)
+    now = arrow.now()
+    if now.day == 28 and now.month == 7:
+        event_info("What is the day today? Elya bday!", update, "")
+        excl = emoji.emojize(":heart:",
+                     use_aliases=True) + emoji.emojize(":birthday:",
+                                       use_aliases=True) + emoji.emojize(":cocktail:",
+                                                         use_aliases=True) + emoji.emojize(":gift:",
+                                                                                     use_aliases=True)
+        bot.send_message(chat_id=update.message.chat_id,
+                         text="Сегодня? День рождения Эли! С ДНЕМ РОЖДЕНИЯ!!! " + excl)
+    else:
+        echo(bot, update)
+
 def el(bot, update):
     debug_info(bot, update)
     event_info("Elya was mentioned!", update, "")
     bot.send_message(chat_id=update.message.chat_id,
                      text="Эля - милейшая девушка из всех, с которыми мы когда-либо общались, хоть иногда и врединка)")
-
 
 def unknown(bot, update):
     debug_info(bot, update)

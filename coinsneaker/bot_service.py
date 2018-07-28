@@ -117,6 +117,9 @@ def add_message_handlers(disp):
     el_handler = MessageHandler(Filters.regex(r"\s*Эля\s*"), events.el)
     disp.add_handler(el_handler)
 
+    el_bday_handler = MessageHandler(Filters.regex(r"\s*сегодня день\s*"), events.el_bday)
+    disp.add_handler(el_bday_handler)
+
     echo_handler = MessageHandler(Filters.text, events.echo)
     disp.add_handler(echo_handler)
 
