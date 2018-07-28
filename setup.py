@@ -15,6 +15,6 @@ setup(name='coinsneaker',
           'matplotlib',
           'numpy',
           'ccxt',
-          'btfxwss'
+          'btfxwss', 'arrow'
       ],
       zip_safe=False)
