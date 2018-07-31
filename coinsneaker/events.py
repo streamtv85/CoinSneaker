@@ -25,15 +25,17 @@ def send_graph(bot, update, args):
         except ValueError:
             logger.warning("invalid argument was given. Using default period: {0}".format(period))
             reply = "Я, конечно, силен, но график на такое количество часов построить не в силах... Два часа - мой ответ"
-    if not (0 < period < 48):
-        reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
-            period)
-        period = 2
+    # if not (0 < period < 48):
+    #     reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
+    #         period)
+    #     period = 2
     logger.debug("target file: " + target_file)
     if reply:
         update.message.reply_text(reply)
-    graph.generate_graph(target_file, period)
     event_info("Graph request for {0} hours".format(period), update, "target file: " + target_file)
+    if not graph.generate_graph(target_file, period):
+        update.message.reply_text("Произошла ошибка при построении графика. Не хватает входных данных?")
+        return
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
@@ -49,15 +51,17 @@ def send_advanced_graph(bot, update, args):
         except ValueError:
             logger.warning("invalid argument was given. Using default period: {0}".format(period))
             reply = "Я, конечно, силен, но график на такое количество часов построить не в силах... Два часа - мой ответ"
-    if not (0 < period < 12):
-        reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
-            period)
-        period = 2
+    # if not (0 < period < 12):
+    #     reply = "Я, конечно, силен, но график аж на {0} часов построить не в силах... Два часа - мой ответ".format(
+    #         period)
+    #     period = 2
     logger.debug("target file: " + target_file)
     if reply:
         update.message.reply_text(reply)
-    graph.generate_graph(target_file, period, debug=True)
     event_info("Advanced graph request for {0} hours".format(period), update, "target file: " + target_file)
+    if not graph.generate_graph(target_file, period, debug=True):
+        update.message.reply_text("Произошла ошибка при построении графика. Не хватает входных данных?")
+        return
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 

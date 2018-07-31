@@ -42,7 +42,7 @@ def get_data_from_file(size, found_files):
 
 
 def generate_graph(target_file, period, debug=False):
-    max_size = period * 60
+    max_size = period * 60  # convert hours to minutes
     found_files = get_exchange_data_files()
     my_data = get_data_from_file(max_size, found_files)
     if not len(my_data):
@@ -83,7 +83,7 @@ def generate_graph(target_file, period, debug=False):
         percents_ma2 = percents.copy()
         # we put dots only when alert changes from false to true: if alerts[i] and not alerts[i - 1]
         ticks[np.logical_or(np.logical_not(alerts), alerts_prev)] = None
-        # ticks[0] = None
+        ticks[0] = None
 
     for i in range(1, len(fmt_dates), 1):
         # print(str(i) + " " + str(item))
@@ -105,12 +105,18 @@ def generate_graph(target_file, period, debug=False):
 
     logger.debug("exmo size: " + str(len(exmo_prices)))
     logger.debug("bitfin size: " + str(len(bitfin_prices)))
-
+    scale_ratio = 1
+    max_period_to_scale = 32
+    if 2 <= period <= max_period_to_scale:
+        scale_ratio = (2 * (period - 2) / (max_period_to_scale - 2)) + 1
+    elif period > max_period_to_scale:
+        scale_ratio = 3
+    print(scale_ratio)
     if debug:
-        fig = plt.figure(figsize=(9.6, 10.8), tight_layout=True)
+        fig = plt.figure(figsize=(9.6 * scale_ratio, 10.8), tight_layout=True)
         ax_main = fig.add_subplot(312)
     else:
-        fig = plt.figure(figsize=(9.6, 7.4), tight_layout=True)
+        fig = plt.figure(figsize=(9.6 * scale_ratio, 7.4), tight_layout=True)
         ax_main = fig.add_subplot(111)
     # default size is 6.4 * 4.8 inches
     # print(fig.get_size_inches())
@@ -129,21 +135,21 @@ def generate_graph(target_file, period, debug=False):
     ax_main.grid()
 
     if debug:
-        print(ticks)
+        # print(ticks)
         ax_percent = fig.add_subplot(311)
         ax_percent.plot_date(fmt_dates, percents, fmt='k', label='diff percent')
         ax_percent.plot_date(fmt_dates, percents_ma, fmt='k--', label='diff percent MA3')
         ax_percent.plot_date(fmt_dates, percents_ma2, fmt='m--', label='diff percent MA20')
         # ax_percent.plot_date(fmt_dates, percents2, fmt='m', label='diff percent from MA10 prices')
-        ax_percent.plot_date(fmt_dates, ticks, fmt='r.', label='alerts')
+        ax_percent.plot_date(fmt_dates, ticks, fmt='ro', label='alerts')
         ax_percent.set_ylabel('percent')
-        ax_ob = fig.add_subplot(313)
-        ax_ob.plot_date(fmt_dates, bitfin_bids, fmt='g', label='Bitfinex bids', drawstyle='steps')
-        ax_ob.plot_date(fmt_dates, bitfin_asks, fmt='r', label='Bitfinex asks', drawstyle='steps')
+        ax_vol = fig.add_subplot(313)
+        ax_vol.plot_date(fmt_dates, bitfin_bids, fmt='g', label='Bitfinex bids', drawstyle='steps')
+        ax_vol.plot_date(fmt_dates, bitfin_asks, fmt='r', label='Bitfinex asks', drawstyle='steps')
         ax_percent.legend()
-        ax_ob.legend()
+        ax_vol.legend()
         ax_percent.grid()
-        ax_ob.grid()
+        ax_vol.grid()
     # plt.subplots_adjust(bottom=0.1, right=0.8, top=0.9)
     # plt.legend()
     # plt.grid()
@@ -199,6 +205,6 @@ if __name__ == "__main__":
     # time.sleep(1)
     # data.stop()
     # generate_book_graph("65464564.png", data)
-    generate_graph('1234322.png', 2)
-    generate_graph('1234322_debug.png', 120, debug=True)
+    generate_graph('1234322.png', 12)
+    generate_graph('1234322_debug.png', 2, debug=True)
     # get_data_from_file(120)
