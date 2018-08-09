@@ -7,6 +7,8 @@ import ccxt
 import requests
 import logging
 from btfxwss import BtfxWss
+import bitmex
+import numpy as np
 
 logger = logging.getLogger('bot-service.exchange')
 # time.clock()
@@ -46,6 +48,28 @@ def get_data_from_api(base_url, path):
     logger.debug("response from " + base_url + path)
     # logger.debug(response.json())
     return response.json()
+
+
+def get_funding():
+    client = bitmex.bitmex(test=False)
+    # print(client.Funding.dir())
+    result = client.Funding.Funding_get(symbol="XBTUSD", reverse=True, count=100).result()
+    instr = client.Instrument.Instrument_get(symbol="XBTUSD", reverse=True).result()[0][0]
+    # for item in instr.keys():
+    #     if 'funding' in item:
+    #         print("{}: {}".format(item, instr[item]))
+    # print(instr['fundingTimestamp'])
+    # print(instr['fundingRate'] * 100)
+
+    result_array = np.array([[instr['fundingTimestamp']], [instr['fundingRate'] * 100]])
+    # print(instr[0][0])
+    history = np.array([[item['timestamp'] for item in result[0]], [item['fundingRate'] * 100 for item in result[0]]])
+    # print(result_array)
+    print(np.append(result_array, history, axis=1))
+    # get the array of funding rates, store them into an array, append the upcoming funding (taken from Instrument)
+
+    #first element is the upcoming funding!
+    return np.append(result_array, history, axis=1)
 
 
 def get_tx_list():
@@ -262,7 +286,9 @@ class BitfinexBookWatcher:
 
 
 if __name__ == "__main__":
-    get_tx_list()
+    # get_tx_list()
+
+    get_funding()
 
 # exmo_watcher = ExchangeWatcher('exmo', 'BTC/USDT')
 # bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USDT')

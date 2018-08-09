@@ -5,7 +5,7 @@ import time
 import logging
 import matplotlib
 
-from coinsneaker.exchange import BitfinexBookWatcher
+from coinsneaker.exchange import BitfinexBookWatcher, get_funding
 
 matplotlib.use('Agg')
 import numpy as np
@@ -197,6 +197,18 @@ def generate_book_graph(target_file, data: BitfinexBookWatcher):
     plt.savefig(target_file)
 
 
+def generate_funding_graph(target_file):
+    data = get_funding()
+    fig = plt.figure(figsize=(9.6, 7.2), tight_layout=True)
+    ax = fig.add_subplot(111)
+    ax.plot_date(data[0], data[1], fmt='g', label='funding rate')
+    ax.set_ylabel('percent')
+    ax.legend()
+    ax.grid()
+    fig.align_labels()
+    fig.autofmt_xdate()
+    plt.savefig(target_file)
+
 if __name__ == "__main__":
     # data = BitfinexBookWatcher()
     # data.start()
@@ -205,6 +217,9 @@ if __name__ == "__main__":
     # time.sleep(1)
     # data.stop()
     # generate_book_graph("65464564.png", data)
-    generate_graph('1234322.png', 12)
-    generate_graph('1234322_debug.png', 2, debug=True)
+    # generate_graph('1234322.png', 12)
+    # generate_graph('1234322_debug.png', 2, debug=True)
+
+    generate_funding_graph('111_funding.png')
+
     # get_data_from_file(120)
