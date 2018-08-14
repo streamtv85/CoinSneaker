@@ -5,7 +5,7 @@ import time
 import logging
 import matplotlib
 
-from coinsneaker.exchange import BitfinexBookWatcher, get_funding
+from coinsneaker.exchange import BitfinexBookWatcher, get_funding, FundingWatcher
 
 matplotlib.use('Agg')
 import numpy as np
@@ -197,17 +197,29 @@ def generate_book_graph(target_file, data: BitfinexBookWatcher):
     plt.savefig(target_file)
 
 
-def generate_funding_graph(target_file):
-    data = get_funding()
+def generate_funding_graph(target_file, data: FundingWatcher):
+    # data = FundingWatcher("XBTUSD")
     fig = plt.figure(figsize=(9.6, 7.2), tight_layout=True)
     ax = fig.add_subplot(111)
-    ax.plot_date(data[0], data[1], fmt='g', label='funding rate')
+    history_tail = data.history.tail(len(data.mean.dropna()))
+    data_pos = history_tail[history_tail > 0]
+    data_neg = history_tail[history_tail < 0]
+    # data_mean = data.history.rolling(window=30).mean()
+    # data_stdev = data.history.rolling(window=30).std()
+    ax.bar(data_pos.index, data_pos, 0.25, color='r', label='Bearish funding rate')
+    ax.bar(data_neg.index, data_neg, 0.25, color='b', label='Bullish funding rate')
+    ax.bar(data.current.index[0], data.current[0], 0.25, color='#F4D03F', label='Next funding rate')
+    ax.bar(data.current.index[-1], data.current[-1], 0.25, color='#AFAFAF', label='Predicted funding rate')
+    ax.plot(data.mean.index, data.mean)
+    ax.plot(data.lower.index, data.lower, color='r')
+    ax.plot(data.higher.index, data.higher, color='b')
     ax.set_ylabel('percent')
     ax.legend()
     ax.grid()
     fig.align_labels()
     fig.autofmt_xdate()
     plt.savefig(target_file)
+
 
 if __name__ == "__main__":
     # data = BitfinexBookWatcher()

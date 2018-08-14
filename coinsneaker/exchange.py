@@ -9,6 +9,7 @@ import logging
 from btfxwss import BtfxWss
 import bitmex
 import numpy as np
+import pandas as pd
 
 logger = logging.getLogger('bot-service.exchange')
 # time.clock()
@@ -55,21 +56,34 @@ def get_funding():
     # print(client.Funding.dir())
     result = client.Funding.Funding_get(symbol="XBTUSD", reverse=True, count=100).result()
     instr = client.Instrument.Instrument_get(symbol="XBTUSD", reverse=True).result()[0][0]
-    # for item in instr.keys():
-    #     if 'funding' in item:
-    #         print("{}: {}".format(item, instr[item]))
+    for item in instr.keys():
+        # if 'funding' in item:
+        print("{}: {}".format(item, instr[item]))
     # print(instr['fundingTimestamp'])
     # print(instr['fundingRate'] * 100)
 
-    result_array = np.array([[instr['fundingTimestamp']], [instr['fundingRate'] * 100]])
-    # print(instr[0][0])
-    history = np.array([[item['timestamp'] for item in result[0]], [item['fundingRate'] * 100 for item in result[0]]])
-    # print(result_array)
-    print(np.append(result_array, history, axis=1))
-    # get the array of funding rates, store them into an array, append the upcoming funding (taken from Instrument)
+    utc = arrow.utcnow()
+    predicted_timestamp = instr['fundingTimestamp'] + datetime.timedelta(hours=instr['fundingInterval'].hour)
 
-    #first element is the upcoming funding!
-    return np.append(result_array, history, axis=1)
+    result_array = np.array([[instr['fundingTimestamp']], [instr['fundingRate'] * 100]])
+    next_funding = pd.Series(data=[instr['fundingRate'] * 100], index=[instr['fundingTimestamp']])
+    predicted_funding = pd.Series(data=[instr['indicativeFundingRate'] * 100], index=[predicted_timestamp])
+    # print(instr[0][0])
+    history = pd.Series(data=[item['fundingRate'] * 100 for item in result[0][::-1]],
+                        index=[item['timestamp'] for item in result[0][::-1]])
+    history = history.append(next_funding)
+    history = history.append(predicted_funding)
+    # print(result_array)
+    # print(np.append(result_array, history, axis=1))
+    # get the array of funding rates, store them into an array, append the upcoming funding (taken from Instrument)
+    print(history.tail()[:-1])
+    print(next_funding)
+    print(predicted_funding)
+    print(utc < instr['fundingTimestamp'])
+    # print(history.index[-1])
+    # print(instr['fundingTimestamp'] + datetime.timedelta(hours=instr['fundingInterval'].hour))
+    # first element is the upcoming funding!
+    return 0
 
 
 def get_tx_list():
@@ -110,6 +124,50 @@ def update_ma(new_value, old_value, period):
     if old_value == 0:
         old_value = new_value
     return (new_value + period * old_value) / (period + 1)
+
+
+class FundingWatcher:
+    def __init__(self, symbol):
+        self.client = bitmex.bitmex(test=False)
+        self.symbol = symbol
+        self.interval = 8
+        self.max = 100
+        self.stdev_ratio = 1.9
+        self.stdev_period = 14 * 3
+        self.current = self.get_current()
+        self.history = self.get_history()
+        self.mean = self.get_mean()
+        self.lower, self.higher = self.get_bands()
+
+    def get_history(self):
+        result = self.client.Funding.Funding_get(symbol=self.symbol, reverse=True, count=self.max).result()
+        return pd.Series(data=[item['fundingRate'] * 100 for item in result[0][::-1]],
+                         index=[item['timestamp'] for item in result[0][::-1]])
+
+    def get_current(self):
+        instr = self.client.Instrument.Instrument_get(symbol=self.symbol, reverse=True).result()[0][0]
+        next_funding = pd.Series(data=[instr['fundingRate'] * 100], index=[instr['fundingTimestamp']])
+        self.interval = instr['fundingInterval'].hour
+        predicted_timestamp = instr['fundingTimestamp'] + datetime.timedelta(hours=self.interval)
+        predicted_funding = pd.Series(data=[instr['indicativeFundingRate'] * 100], index=[predicted_timestamp])
+        return next_funding.append(predicted_funding)
+
+    def get_mean(self):
+        return self.history.append(self.current).rolling(window=self.stdev_period).mean()
+
+    def get_bands(self):
+        self.mean = self.get_mean()
+        data_stdev = self.history.append(self.current).rolling(window=self.stdev_period).std()
+        return self.mean - self.stdev_ratio * data_stdev, self.mean + self.stdev_ratio * data_stdev
+
+    def update(self):
+        self.current = self.get_current()
+        utc = datetime.datetime.now(datetime.timezone.utc)
+        if self.history.index[-1] + datetime.timedelta(hours=self.interval) < utc:
+            self.history = self.get_history()
+            self.mean = self.get_mean()
+            self.lower, self.higher = self.get_bands()
+
 
 
 class ExchangeWatcher:
@@ -288,7 +346,16 @@ class BitfinexBookWatcher:
 if __name__ == "__main__":
     # get_tx_list()
 
-    get_funding()
+    fnd = FundingWatcher("XBTUSD")
+    print(fnd.history)
+    print(fnd.current)
+    print(fnd.interval)
+    fnd.update()
+    print("greater than 0")
+    print(fnd.history[fnd.history > 0].tail())
+    print("less than 0")
+    print(fnd.history[fnd.history < 0].tail())
+    print(fnd.history.rolling(30).mean())
 
 # exmo_watcher = ExchangeWatcher('exmo', 'BTC/USDT')
 # bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USDT')

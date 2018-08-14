@@ -15,7 +15,8 @@ from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
 
-from coinsneaker import events, dbmanager, exchange, graph, ExchangeWatcher, BitfinexBookWatcher, DataHistoryManager
+from coinsneaker import events, dbmanager, exchange, graph, ExchangeWatcher, BitfinexBookWatcher, DataHistoryManager, \
+    FundingWatcher
 from coinsneaker.configmanager import config
 
 cwd = os.path.dirname(os.path.abspath(__file__))
@@ -47,6 +48,7 @@ exmo_watcher = ExchangeWatcher('exmo', 'BTC/USD')
 bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USD')
 data = DataHistoryManager(bitfin_watcher, exmo_watcher)
 btf = BitfinexBookWatcher()
+fnd = FundingWatcher("XBTUSD")
 
 alert = False
 orderbook_alert = False
@@ -106,6 +108,14 @@ def send_orderbook_graph(bot, update):
     os.remove(target_file)
 
 
+def send_funding_graph(bot, update):
+    target_file = '{0}_fn.png'.format(update.message.chat_id)
+    graph.generate_funding_graph(target_file, fnd)
+    events.event_info("Funding graph request", update, "target file: " + target_file)
+    bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
+    os.remove(target_file)
+
+
 def add_message_handlers(disp):
     logger.info("Adding message handlers.")
     welcome_handler = MessageHandler(Filters.status_update.new_chat_members, events.welcome)
@@ -158,10 +168,16 @@ def add_command_handlers(disp):
 
     ob_graph_handler = CommandHandler('book', send_orderbook_graph)
     disp.add_handler(ob_graph_handler)
+    fn_graph_handler = CommandHandler('funding', send_funding_graph)
+    disp.add_handler(fn_graph_handler)
 
     # should be added as the LAST handler
     unknown_handler = MessageHandler(Filters.command, events.unknown)
     disp.add_handler(unknown_handler)
+
+
+def callback_funding_updates(bot, job):
+    fnd.update()
 
 
 def callback_orderbook_updates(bot, job):
@@ -232,6 +248,8 @@ def callback_exchanges_data(bot, job):
     logger.debug("Bitfinex websocket is alive: " + str(btf.wss.conn.is_alive()))
     if not (btf.wss.conn.connected.is_set() and btf.wss.conn.is_alive()):
         logger.warning("Bitfinex websocket is not connected! Trying to reconnect")
+        del btf.wss
+        del btf
         btf = BitfinexBookWatcher()
         logger.info("Starting the client")
         btf.start()
@@ -360,6 +378,8 @@ def main():
         logger.debug(str(current.callback.__name__))
     logger.info("init regular job to gather exchange data every minute")
     job_minute = job_queue.run_repeating(callback_exchanges_data, interval=60, first=0)
+    logger.info("init regular job to get funding rate every minute")
+    job__funding_minute = job_queue.run_repeating(callback_funding_updates, interval=60, first=0)
     logger.info("init regular job to get Bitfinex orderbook every second")
     job_orderbook_second = job_queue.run_repeating(callback_orderbook_updates, interval=1, first=0)
     logger.info("The bot has started.")
