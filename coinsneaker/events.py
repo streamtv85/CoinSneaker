@@ -38,6 +38,7 @@ def send_graph(bot, update, args):
     if not graph.generate_graph(target_file, period):
         update.message.reply_text("Произошла ошибка при построении графика. Не хватает входных данных?")
         return
+    bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.UPLOAD_PHOTO)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
@@ -64,6 +65,7 @@ def send_advanced_graph(bot, update, args):
     if not graph.generate_graph(target_file, period, debug=True):
         update.message.reply_text("Произошла ошибка при построении графика. Не хватает входных данных?")
         return
+    bot.sendChatAction(chat_id=update.message.chat_id, action=telegram.ChatAction.UPLOAD_PHOTO)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
@@ -116,20 +118,23 @@ def el_bday(bot, update):
     if now.day == 28 and now.month == 7:
         event_info("What is the day today? Elya bday!", update, "")
         excl = emoji.emojize(":heart:",
-                     use_aliases=True) + emoji.emojize(":birthday:",
-                                       use_aliases=True) + emoji.emojize(":cocktail:",
-                                                         use_aliases=True) + emoji.emojize(":gift:",
-                                                                                     use_aliases=True)
+                             use_aliases=True) + emoji.emojize(":birthday:",
+                                                               use_aliases=True) + emoji.emojize(":cocktail:",
+                                                                                                 use_aliases=True) + emoji.emojize(
+            ":gift:",
+            use_aliases=True)
         bot.send_message(chat_id=update.message.chat_id,
                          text="Сегодня? День рождения Эли! С ДНЕМ РОЖДЕНИЯ!!! " + excl)
     else:
         echo(bot, update)
+
 
 def el(bot, update):
     debug_info(bot, update)
     event_info("Elya was mentioned!", update, "")
     bot.send_message(chat_id=update.message.chat_id,
                      text="Эля - милейшая девушка из всех, с которыми мы когда-либо общались, хоть иногда и врединка)")
+
 
 def unknown(bot, update):
     debug_info(bot, update)
