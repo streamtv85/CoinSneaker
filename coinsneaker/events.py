@@ -246,8 +246,11 @@ def event_info(prefix, update, message):
         suffix = "Response:\n"
     else:
         suffix = ""
+    if update.message.from_user.username:
+        from_user = update.message.from_user.username
+    else:
+        from_user = update.message.from_user.first_name
     logger.info(
         prefix + ": chat id {0!s}, user {1} ({2}). ".format(
-            update.message.chat_id, update.message.from_user.username if update.message.from_user.username else (
-                    update.message.from_user.first_name + update.message.from_user.last_name),
+            update.message.chat_id, from_user,
             update.message.from_user.id) + suffix + message)
