@@ -139,7 +139,7 @@ def el(bot, update):
 def unknown(bot, update):
     debug_info(bot, update)
     reply = "Sorry, I didn't understand that command."
-    event_info("Unknown command", update, reply)
+    event_info("Unknown command: " + str(update.message.text), update, reply)
     bot.send_message(chat_id=update.message.chat_id, text=reply)
 
 
