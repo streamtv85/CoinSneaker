@@ -10,7 +10,7 @@ import emoji
 from logging.handlers import TimedRotatingFileHandler
 from shutil import make_archive
 from threading import Thread
-from telegram import MessageEntity, ParseMode
+from telegram import MessageEntity, ParseMode, ChatAction
 from telegram.ext import MessageHandler, Filters, Updater, CommandHandler
 from telegram.error import (TelegramError, Unauthorized, BadRequest,
                             TimedOut, ChatMigrated, NetworkError)
@@ -104,6 +104,7 @@ def send_orderbook_graph(bot, update):
     target_file = '{0}_ob.png'.format(update.message.chat_id)
     graph.generate_book_graph(target_file, btf)
     events.event_info("Orderbook graph request", update, "target file: " + target_file)
+    bot.sendChatAction(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
@@ -112,6 +113,7 @@ def send_funding_graph(bot, update):
     target_file = '{0}_fn.png'.format(update.message.chat_id)
     graph.generate_funding_graph(target_file, fnd)
     events.event_info("Funding graph request", update, "target file: " + target_file)
+    bot.sendChatAction(chat_id=update.message.chat_id, action=ChatAction.UPLOAD_PHOTO)
     bot.send_photo(chat_id=update.message.chat_id, photo=open(target_file, 'rb'))
     os.remove(target_file)
 
@@ -272,13 +274,17 @@ def write_exchange_data_to_file(header, text):
     csv_ext = '.csv'
     full_path = os.path.join(cwd, folder, data_filename + csv_ext)
     exists = os.path.exists(full_path)
-    f = open(full_path, "a+")
-    if not exists:
-        logger.info("file '" + full_path + "' does not exist. Writing header")
-        f.write(header)
-    logger.debug("filename with exchange data: " + data_filename)
-    f.write(text)
-    f.close()
+    try:
+        f = open(full_path, "a+")
+        if not exists:
+            logger.info("file '" + full_path + "' does not exist. Writing header")
+            f.write(header)
+        logger.debug("filename with exchange data: " + data_filename)
+        f.write(text)
+    except:
+        logger.debug("Exception occured")
+    finally:
+        f.close()
     archive_old_files(os.path.join(cwd, folder, csv_prefix + "*.csv"))
 
 

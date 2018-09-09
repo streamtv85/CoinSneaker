@@ -198,14 +198,11 @@ def generate_book_graph(target_file, data: BitfinexBookWatcher):
 
 
 def generate_funding_graph(target_file, data: FundingWatcher):
-    # data = FundingWatcher("XBTUSD")
     fig = plt.figure(figsize=(9.6, 7.2), tight_layout=True)
     ax = fig.add_subplot(111)
     history_tail = data.history.tail(len(data.mean.dropna()))
     data_pos = history_tail[history_tail > 0]
     data_neg = history_tail[history_tail < 0]
-    # data_mean = data.history.rolling(window=30).mean()
-    # data_stdev = data.history.rolling(window=30).std()
     ax.bar(data_pos.index, data_pos, 0.25, color='r', label='Bearish funding rate')
     ax.bar(data_neg.index, data_neg, 0.25, color='b', label='Bullish funding rate')
     ax.bar(data.current.index[0], data.current[0], 0.25, color='#F4D03F', label='Next funding rate')
@@ -231,7 +228,7 @@ if __name__ == "__main__":
     # generate_book_graph("65464564.png", data)
     # generate_graph('1234322.png', 12)
     # generate_graph('1234322_debug.png', 2, debug=True)
-
-    generate_funding_graph('111_funding.png')
+    fn = FundingWatcher("XBTUSD")
+    generate_funding_graph('111_funding.png', fn)
 
     # get_data_from_file(120)
