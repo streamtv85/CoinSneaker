@@ -301,14 +301,14 @@ class BitfinexBookWatcher:
         self.ask_depth = sum(self.asks.values())
         self.ask_ma_fast = update_ma(self.ask_depth, self.ask_ma_fast, 5)
         self.ask_ma_slow = update_ma(self.ask_depth, self.ask_ma_slow, 90)
-        logger.debug("Market depth: bids: {0}, ma5: {1} ma90: {2} |  asks: {3}, ma5: {4} ma90: {5}".format(
-            round(self.bid_depth),
-            round(self.bid_ma_fast),
-            round(self.bid_ma_slow),
-            round(self.ask_depth),
-            round(self.ask_ma_fast),
-            round(self.ask_ma_slow)
-        ))
+        # logger.debug("Market depth: bids: {0}, ma5: {1} ma90: {2} |  asks: {3}, ma5: {4} ma90: {5}".format(
+        #     round(self.bid_depth),
+        #     round(self.bid_ma_fast),
+        #     round(self.bid_ma_slow),
+        #     round(self.ask_depth),
+        #     round(self.ask_ma_fast),
+        #     round(self.ask_ma_slow)
+        # ))
         # return result
 
     # better call stop() at the end of the program (and on TERM signal)

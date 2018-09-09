@@ -272,13 +272,17 @@ def write_exchange_data_to_file(header, text):
     csv_ext = '.csv'
     full_path = os.path.join(cwd, folder, data_filename + csv_ext)
     exists = os.path.exists(full_path)
-    f = open(full_path, "a+")
-    if not exists:
-        logger.info("file '" + full_path + "' does not exist. Writing header")
-        f.write(header)
-    logger.debug("filename with exchange data: " + data_filename)
-    f.write(text)
-    f.close()
+    try:
+        f = open(full_path, "a+")
+        if not exists:
+            logger.info("file '" + full_path + "' does not exist. Writing header")
+            f.write(header)
+        logger.debug("filename with exchange data: " + data_filename)
+        f.write(text)
+    except:
+        logger.debug("Exception occured")
+    finally:
+        f.close()
     archive_old_files(os.path.join(cwd, folder, csv_prefix + "*.csv"))
 
 
