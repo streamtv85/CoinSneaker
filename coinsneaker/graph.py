@@ -204,10 +204,10 @@ def generate_funding_graph(target_file, data: FundingWatcher):
     history_tail = data.history.tail(len(data.mean.dropna()))
     data_pos = history_tail[history_tail > 0]
     data_neg = history_tail[history_tail < 0]
-    # data_mean = data.history.rolling(window=30).mean()
-    # data_stdev = data.history.rolling(window=30).std()
-    ax.bar(data_pos.index, data_pos, 0.25, color='r', label='Bearish funding rate')
-    ax.bar(data_neg.index, data_neg, 0.25, color='b', label='Bullish funding rate')
+    if data_pos.notna().any():
+        ax.bar(data_pos.index, data_pos, 0.25, color='r', label='Bearish funding rate')
+    if data_neg.notna().any():
+        ax.bar(data_neg.index, data_neg, 0.25, color='b', label='Bullish funding rate')
     ax.bar(data.current.index[0], data.current[0], 0.25, color='#F4D03F', label='Next funding rate')
     ax.bar(data.current.index[-1], data.current[-1], 0.25, color='#AFAFAF', label='Predicted funding rate')
     ax.plot(data.mean.index, data.mean)
