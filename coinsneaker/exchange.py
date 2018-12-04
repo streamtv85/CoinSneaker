@@ -134,6 +134,8 @@ class FundingWatcher:
         self.max = 100
         self.stdev_ratio = 1.9
         self.stdev_period = 14 * 3
+        self.alert = False
+        self.alert_message = ""
         self.current = self.get_current()
         self.history = self.get_history()
         self.mean = self.get_mean()
@@ -160,6 +162,23 @@ class FundingWatcher:
         data_stdev = self.history.append(self.current).rolling(window=self.stdev_period).std()
         return self.mean - self.stdev_ratio * data_stdev, self.mean + self.stdev_ratio * data_stdev
 
+    def update_alert(self):
+        latest = self.history.append(self.current).tail()
+        koeff = 1.10  # when to say that it is much higher
+        above_higher = latest > self.higher.tail()
+        much_above_higher = latest > self.higher.tail() * koeff
+        below_lower = latest < self.lower.tail()
+        much_below_lower = latest < self.lower.tail() * koeff
+        print(latest)
+        print(above_higher)
+        print(below_lower)
+        print(much_above_higher)
+        print(much_below_lower)
+        print(much_below_lower[-1])
+        if (not self.alert) and above_higher[-2]:
+            # next funding rate is above stdev and
+            self.alert = True
+
     def update(self):
         self.current = self.get_current()
         utc = datetime.datetime.now(datetime.timezone.utc)
@@ -167,7 +186,6 @@ class FundingWatcher:
             self.history = self.get_history()
             self.mean = self.get_mean()
             self.lower, self.higher = self.get_bands()
-
 
 
 class ExchangeWatcher:
@@ -348,14 +366,9 @@ if __name__ == "__main__":
 
     fnd = FundingWatcher("XBTUSD")
     print(fnd.history)
-    print(fnd.current)
-    print(fnd.interval)
     fnd.update()
-    print("greater than 0")
-    print(fnd.history[fnd.history > 0].tail())
-    print("less than 0")
-    print(fnd.history[fnd.history < 0].tail())
-    print(fnd.history.rolling(30).mean())
+    print("alerts:")
+    fnd.update_alert()
 
 # exmo_watcher = ExchangeWatcher('exmo', 'BTC/USDT')
 # bitfin_watcher = ExchangeWatcher('bitfinex', 'BTC/USDT')
